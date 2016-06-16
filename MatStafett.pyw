@@ -132,7 +132,7 @@ class Hmi:
         Start the process of generating the results.
         """
         self.read_file_contents()
-        self.validate_number_of_participants
+        # self.validate_number_of_participants
         self.save_to_file()
 
     def log_output(self, text):
