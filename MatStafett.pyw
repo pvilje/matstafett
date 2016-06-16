@@ -14,6 +14,7 @@ Description:    Select an Excel (.xlsx) or notepad (.txt) document.
 # import openpyxl
 import os
 import tkinter
+import random
 from tkinter import filedialog
 # from tkinter import messagebox
 
@@ -30,6 +31,8 @@ class Hmi:
         self.file_path = None
         self.list_supported_file_types = [("Excel", "xlsx"), ("Text", "txt")]
         self.list_participants = []
+        self.list_sorted_participants = []
+        self.list_rand_index = []
 
         self.l_title = tkinter.Label(parent, text="Matstafett")
         self.f_input = tkinter.Frame(parent, pady=10, padx=10)
@@ -96,12 +99,13 @@ class Hmi:
         """
         Read the participant list in the selected file.
         """
+        self.list_participants = []
         file = os.path.join(self.file_path, self.file_name)
         self.log_output("Läser in {}-filen för att få lite koll på vilka som vill vara med.".format(self.file_type))
         if self.file_type == ".txt":
             with open(file, "r") as f:
                 for line in f:
-                    self.list_participants.append([line, ])
+                    self.list_participants.append(line)
         elif self.file_type == ".xlsx":
             self.log_output("Excel file to be implemented...")
         else:
@@ -124,15 +128,42 @@ class Hmi:
                 f.write(participants)
 
     def validate_number_of_participants(self):
-        # raise InvalidParticimantCount("weeee")
-        pass
+        """
+        Makes sure the number of participants is a factor of 3.
+        Raises ValueError if not.
+        """
+        self.log_output(str(len(self.list_participants)))
+        if len(self.list_participants) % 3 != 0:
+            raise ValueError("Antal deltagare är inte delbart på 3")
+
+    def generate_random_index(self):
+        i = 1
+        self.list_rand_index = []
+        while i <= len(self.list_participants):
+            self.list_rand_index.append(i)
+            i += 1
+        random.shuffle(self.list_rand_index)
+
+    def sort_participants(self):
+        """
+        Generate a sorted... sort of unsorted... list of members based on random numbers.
+        """
+        self.list_sorted_participants = []
+        for index in self.list_rand_index:
+            self.list_sorted_participants.append(self.list_participants[index-1])
 
     def generate_result(self):
         """
         Start the process of generating the results.
         """
         self.read_file_contents()
-        # self.validate_number_of_participants
+        try:
+            self.validate_number_of_participants()
+        except ValueError as e:
+            self.log_output("Error: {}".format(e))
+            return
+        self.generate_random_index()
+        self.sort_participants()
         self.save_to_file()
 
     def log_output(self, text):
