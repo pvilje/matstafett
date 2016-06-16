@@ -124,7 +124,9 @@ class Hmi:
                 f.write(participants)
 
     def validate_number_of_participants(self):
-        raise InvalidParticimantCount("weeee")
+        # raise InvalidParticimantCount("weeee")
+        pass
+
     def generate_result(self):
         """
         Start the process of generating the results.
