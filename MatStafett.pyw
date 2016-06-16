@@ -26,8 +26,10 @@ class Hmi:
         """
         # variables
         self.file_type = ""
-        self.file_name = ""
+        self.file_name = None
+        self.file_path = None
         self.list_supported_file_types = [("Excel", "xlsx"), ("Text", "txt")]
+        self.list_participants = []
 
         self.l_title = tkinter.Label(parent, text="Matstafett")
         self.f_input = tkinter.Frame(parent, pady=10, padx=10)
@@ -82,15 +84,54 @@ class Hmi:
 
         if file_ok:
             self.b_run.configure(state=tkinter.ACTIVE)
-            self.file_name = file
+            self.file_path, self.file_name = os.path.split(file)
             self.log_output("Vald Fil: {}".format(file))
         else:
             self.b_run.configure(state=tkinter.DISABLED)
-            self.file_name = ""
+            self.file_name = None
+            self.file_path = None
             self.file_type = ""
 
+    def read_file_contents(self):
+        """
+        Read the participant list in the selected file.
+        """
+        file = os.path.join(self.file_path, self.file_name)
+        self.log_output("Läser in {}-filen för att få lite koll på vilka som vill vara med.".format(self.file_type))
+        if self.file_type == ".txt":
+            with open(file, "r") as f:
+                for line in f:
+                    self.list_participants.append([line, ])
+        elif self.file_type == ".xlsx":
+            self.log_output("Excel file to be implemented...")
+        else:
+            self.log_output("Filtyp måste vara txt eller xlsx")
+
+    def save_to_file(self):
+        """
+        Save the generated list to a file, Grouped and neatly ordered
+        """
+        if self.file_type == ".txt":
+            # Text file.
+            # Create a new file since we dont want to mess with the source.
+            filename = "new_" + self.file_name
+            # Prepare a variable to write to the file.
+            participants = ""
+            for participant in self.list_participants:
+                participants += participant[0]
+            # Open / create a new file and save the results.
+            with open(os.path.join(self.file_path, filename), "w") as f:
+                f.write(participants)
+
+    def validate_number_of_participants(self):
+        raise InvalidParticimantCount("weeee")
     def generate_result(self):
-        pass
+        """
+        Start the process of generating the results.
+        """
+        self.read_file_contents()
+        self.validate_number_of_participants
+        self.save_to_file()
 
     def log_output(self, text):
         """
