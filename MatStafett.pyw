@@ -33,13 +33,15 @@ class Hmi:
         self.list_participants = []
         self.list_sorted_participants = []
         self.list_rand_index = []
-
+        
+        # Main frames and labels
         self.l_title = tkinter.Label(parent, text="Matstafett")
         self.f_input = tkinter.Frame(parent, pady=10, padx=10)
         self.f_output = tkinter.Frame(parent, pady=10, padx=10)
+        
         # TK Variables
         self.sv_filename = tkinter.StringVar()
-
+        
         # Input widgets
         self.e_filename = tkinter.Entry(self.f_input, textvariable=self.sv_filename, width=30)
         self.b_select_file = tkinter.Button(self.f_input, text="Välj fil", command=self.select_file)
@@ -48,6 +50,13 @@ class Hmi:
 
         # Output widgets
         self.t_output = tkinter.Text(self.f_output, height=10, width=70, state=tkinter.DISABLED)
+        # Add colors and scrollbars to the output widget
+        log_colors = ["black", "green", "blue", "red"]
+        for color in log_colors:
+            self.t_output.tag_config(color, foreground=color)
+        self.scroll_x_output = tkinter.Scrollbar(self.f_output, command=self.t_output.xview, orient=tkinter.HORIZONTAL)
+        self.scroll_y_output = tkinter.Scrollbar(self.f_output, command=self.t_output.yview)
+        self.t_output.configure(yscrollcommand=self.scroll_y_output.set, xscrollcommand=self.scroll_x_output.set)
 
     def draw_main(self):
         """
@@ -171,6 +180,7 @@ class Hmi:
         Method to print text to the output frame.
         :param text: The text to print
         """
+        # todo add colors and scrollbar
         self.t_output.configure(state=tkinter.NORMAL)
         text += "\n"
         self.t_output.insert(tkinter.END, text)
