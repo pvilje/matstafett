@@ -2,7 +2,7 @@
 Read a list of participants and generate a lineup for "matstafett"
 (No idea what matstafett is called in english)
 
-# Basic concept:
+**Basic concept**
 A certain number of people/couples sign up. The participant total MUST be a factor of 3, and at least 9.
 Each person/couple is assigned a part of a dinner to host (starter, main course or desert).
 Each dinner will consist of a host and two guests. The meal will take place at the host's home.
@@ -16,7 +16,7 @@ The goal of it all is:
 * Everyone will meet new people in each meal. 
 * (3 meals with 3 participants at each meal, regardless of the amount of participants each participant will have met 8 other participants at the end, each participant will have hosted a meal, each participant will have visited two others home)
 
-# The program:
+**The program:**
 v.1 will probably be in swedish, later version will include translation files... 
 Select an Excel (.xlsx) or notepad (.txt) document which only should contain a list of participants, nothing else.
 The script will calculate a setup where all participants will:
