@@ -11,7 +11,7 @@ Description:    Select an Excel (.xlsx) or notepad (.txt) document.
 """
 
 # Import needed modules
-# import openpyxl
+import openpyxl
 import os
 import tkinter
 import random
@@ -126,6 +126,12 @@ class Hmi:
                     self.list_participants.append(line)
         elif self.file_type == ".xlsx":
             self.log_output("Excel file to be implemented...")
+            wb = openpyxl.load_workbook(file, use_iterators=True)
+            ws = wb.get_sheet_by_name(wb.sheetnames[0])
+            max_rows = ws.max_row
+            for row in ws.iter_rows("A1:A{}".format(max_rows)):
+                for cell in row:
+                    self.list_participants.append(cell.value)
         else:
             self.log_output("Filtyp måste vara txt eller xlsx")
 
@@ -161,7 +167,8 @@ class Hmi:
             i += 1
             y += 1
         self.log_output("Allt klart, sparar resultatet.")
-        if self.file_type == ".txt":
+        # Todo fix xlsx...
+        if self.file_type == ".txt" or self.file_type == ".xlsx":
             # Text file.
             # Create a new file since we dont want to mess with the source.
             filename = "new_" + self.file_name
