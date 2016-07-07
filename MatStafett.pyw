@@ -15,6 +15,7 @@ import openpyxl
 import os
 import tkinter
 import random
+import csv
 from tkinter import filedialog
 # from tkinter import messagebox
 
@@ -37,9 +38,14 @@ class Hmi:
         self.groups_desert = []
         self.list_rand_index = []
         self.num_groups = None
-        
+        self.lang = {}
+
+        # Get language pack
+        self.get_lang(language="swe")
+        parent.title(self.lang["title"])
+
         # Main frames and labels
-        self.l_title = tkinter.Label(parent, text="Matstafett")
+        self.l_title = tkinter.Label(parent, text=self.lang["title"])
         self.f_input = tkinter.Frame(parent, pady=10, padx=10)
         self.f_output = tkinter.Frame(parent, pady=10, padx=10)
         
@@ -48,8 +54,8 @@ class Hmi:
         
         # Input widgets
         self.e_filename = tkinter.Entry(self.f_input, textvariable=self.sv_filename, width=30)
-        self.b_select_file = tkinter.Button(self.f_input, text="Välj fil", command=self.select_file)
-        self.b_run = tkinter.Button(self.f_input, text="KÖR!", command=self.generate_result, state=tkinter.DISABLED,
+        self.b_select_file = tkinter.Button(self.f_input, text=self.lang["file_select"], command=self.select_file)
+        self.b_run = tkinter.Button(self.f_input, text=self.lang["button_run"], command=self.generate_result, state=tkinter.DISABLED,
                                     height=3, width=10)
 
         # Output widgets
@@ -95,10 +101,10 @@ class Hmi:
                 self.file_type = ".xlsx"
             else:
                 file_ok = False
-                self.log_output("Kan bara öppna .txt eller .xlsx (Excel)-filer.")
+                self.log_output(lang["error_file_types"], "red")
         else:
             file_ok = False
-            self.log_output("Ingen fil vald :(")
+            self.log_output(lang["error_no_file_selected"], "red")
 
         if file_ok:
             self.b_run.configure(state=tkinter.ACTIVE)
@@ -131,7 +137,8 @@ class Hmi:
             max_rows = ws.max_row
             for row in ws.iter_rows("A1:A{}".format(max_rows)):
                 for cell in row:
-                    self.list_participants.append(cell.value)
+                    if cell.value is not None:
+                        self.list_participants.append(cell.value)
         else:
             self.log_output("Filtyp måste vara txt eller xlsx")
 
@@ -243,9 +250,29 @@ class Hmi:
         self.t_output.insert(tkinter.END, text, color)
         self.t_output.configure(state=tkinter.DISABLED)
 
+    def get_lang(self, language="eng", filename="lang.csv"):
+        """
+        Read a csv file and return the phrases matching the selected language
+        :param language: the language to use
+        :param filename: the csv file to open
+        :return: a tuple with phrases in selected language
+        """
+        try:
+            with open(filename, "r", encoding="utf8") as csv_file:
+                reader = csv.DictReader(csv_file, delimiter=";")
+                cur_lang = {}
+                for row in reader:
+                    cur_lang[row["phrase"]] = row[language]
+        except KeyError as e:
+            pass
+        except FileNotFoundError as e:
+            pass
+            # Todo handle error
+        self.lang = cur_lang
+
+
 if __name__ == "__main__":
     root = tkinter.Tk()
-    root.title("Matstafett")
     hmi = Hmi(root)
     hmi.draw_main()
     root.mainloop()
