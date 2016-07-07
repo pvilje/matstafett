@@ -101,17 +101,15 @@ class Hmi:
                 self.file_type = ".xlsx"
             else:
                 file_ok = False
-                self.log_output(lang["error_file_types"], "red")
+                self.log_output(self.lang["error_file_types"], "red")
         else:
             file_ok = False
-            self.log_output(lang["error_no_file_selected"], "red")
+            self.log_output(self.lang["error_no_file_selected"], "red")
 
         if file_ok:
             self.b_run.configure(state=tkinter.ACTIVE)
             self.file_path, self.file_name = os.path.split(file)
-            self.log_output("Vald Fil: {}".format(file))
-            # self.e_filename.delete(0, tkinter.END)
-            # self.e_filenamesv_filename.insert(0, file)
+            self.log_output("{}: {}".format(self.lang["file_selected"], file))
 
         else:
             self.b_run.configure(state=tkinter.DISABLED)
@@ -125,13 +123,12 @@ class Hmi:
         """
         self.list_participants = []
         file = os.path.join(self.file_path, self.file_name)
-        self.log_output("Läser in {}-filen för att få lite koll på vilka som vill vara med.".format(self.file_type))
+        self.log_output(self.lang["file_reading_{}".format(self.file_type)])
         if self.file_type == ".txt":
             with open(file, "r") as f:
                 for line in f:
                     self.list_participants.append(line)
         elif self.file_type == ".xlsx":
-            self.log_output("Excel file to be implemented...")
             wb = openpyxl.load_workbook(file, use_iterators=True)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
@@ -140,7 +137,7 @@ class Hmi:
                     if cell.value is not None:
                         self.list_participants.append(cell.value)
         else:
-            self.log_output("Filtyp måste vara txt eller xlsx")
+            self.log_output(self.lang["error_file_types"], "red")
 
     def save_to_file(self):
         """

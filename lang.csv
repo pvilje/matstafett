@@ -3,4 +3,8 @@ title;Food Relay;Matstafett
 error_file_types;Error: Can only open .txt or .xlsx (Excel) files. ;Fel: Kan bara öppna .txt eller .xlsx (Excel)-filer.
 error_no_file_selected: Error: No file selected :( ;Fel: Ingen fil vald :(
 file_select;select file;välj fil
+file_selected;Selected file;Vald fil
+file_reading_.txt;Reading the txt file;Läser in txt-filen
+file_reading_.xlsx;Reading the xlsx file;Läser in xlsx-filen
 button_run;Run!;Kör!
+
