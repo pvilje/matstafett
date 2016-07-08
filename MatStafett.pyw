@@ -55,8 +55,8 @@ class Hmi:
         # Input widgets
         self.e_filename = tkinter.Entry(self.f_input, textvariable=self.sv_filename, width=30)
         self.b_select_file = tkinter.Button(self.f_input, text=self.lang["file_select"], command=self.select_file)
-        self.b_run = tkinter.Button(self.f_input, text=self.lang["button_run"], command=self.generate_result, state=tkinter.DISABLED,
-                                    height=3, width=10)
+        self.b_run = tkinter.Button(self.f_input, text=self.lang["button_run"], command=self.generate_result,
+                                    state=tkinter.DISABLED, height=3, width=10)
 
         # Output widgets
         self.t_output = tkinter.Text(self.f_output, height=10, width=70, state=tkinter.DISABLED)
@@ -84,6 +84,8 @@ class Hmi:
         # output frame
         self.f_output.grid(row=2, column=0)
         self.t_output.grid(row=0, column=0, columnspan=2)
+        self.scroll_x_output.grid(row=1, column=0, columnspan=2, sticky=tkinter.E + tkinter.W)
+        self.scroll_y_output.grid(row=0, column=2, sticky=tkinter.N + tkinter.S)
 
     def select_file(self):
         """
@@ -233,6 +235,7 @@ class Hmi:
             return
         self.generate_random_index()
         self.sort_participants()
+        # Todo generate summary of who makes different parts of the meal
         self.save_to_file()
 
     def log_output(self, text, color="black"):
@@ -241,7 +244,6 @@ class Hmi:
         :param text: The text to print
         :param color: Text color
         """
-        # todo add scrollbar
         self.t_output.configure(state=tkinter.NORMAL)
         text += "\n"
         self.t_output.insert(tkinter.END, text, color)
@@ -254,19 +256,33 @@ class Hmi:
         :param filename: the csv file to open
         :return: a tuple with phrases in selected language
         """
+        cur_lang = {}
         try:
             with open(filename, "r", encoding="utf8") as csv_file:
                 reader = csv.DictReader(csv_file, delimiter=";")
-                cur_lang = {}
                 for row in reader:
                     cur_lang[row["phrase"]] = row[language]
-        except KeyError as e:
+        except KeyError:
             pass
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             pass
             # Todo handle error
         self.lang = cur_lang
 
+    def get_str(self, phrase):
+        """
+        Try to read a phrase from the language dictionary
+        Throw an exception if not ok
+        :param phrase: the wanted phrase
+        :return: The text to print
+        """
+        try:
+            string = self.lang[phrase]
+            return string
+        except KeyError:
+            string = "Invalid phrase to print: {}".format(phrase)
+            return string
+        # Todo handle errors correctly
 
 if __name__ == "__main__":
     root = tkinter.Tk()
