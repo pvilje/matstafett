@@ -1,0 +1,93 @@
+Förrätt
+Värd:name 6
+Gäster:
+name 9
+name 10
+
+Värd:name 4
+Gäster:
+name 3
+name 17
+
+Värd:name 2
+Gäster:
+name 1
+name 14
+
+Värd:name 16
+Gäster:
+name 15
+name 13
+
+Värd:name 11
+Gäster:
+name 8
+name 18
+
+Värd:name 5
+Gäster:
+name 7
+name 12
+
+Huvudrätt
+Värd:name 3
+Gäster:
+name 6
+name 14
+
+Värd:name 1
+Gäster:
+name 4
+name 13
+
+Värd:name 15
+Gäster:
+name 2
+name 18
+
+Värd:name 8
+Gäster:
+name 16
+name 12
+
+Värd:name 7
+Gäster:
+name 11
+name 10
+
+Värd:name 9
+Gäster:
+name 5
+name 17
+
+Efterrätt
+Värd:name 17
+Gäster:
+name 6
+name 1
+
+Värd:name 14
+Gäster:
+name 4
+name 15
+
+Värd:name 13
+Gäster:
+name 2
+name 8
+
+Värd:name 18
+Gäster:
+name 16
+name 7
+
+Värd:name 12
+Gäster:
+name 11
+name 9
+
+Värd:name 10
+Gäster:
+name 5
+name 3
+
