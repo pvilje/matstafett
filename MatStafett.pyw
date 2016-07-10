@@ -21,8 +21,6 @@ from tkinter import filedialog
 
 
 class Hmi:
-    LANGUAGE = "eng"
-
     def __init__(self, parent):
         """
         Initialize the class
@@ -43,7 +41,7 @@ class Hmi:
         self.lang = {}
 
         # Get language pack
-        self.get_lang(language=self.LANGUAGE)
+        self.get_lang(language="swe")
         parent.title(self.lang["title"])
 
         # Main frames and labels
@@ -147,10 +145,10 @@ class Hmi:
         """
         Save the generated list to a file, Grouped and neatly ordered
         """
-        self.log_output(self.lang["progress_gen_route"])
-        starter = self.lang["starter"]+"\n"
-        main = self.lang["main_course"]+"\n"
-        desert = self.lang["desert"]+"\n"
+        self.log_output("Genererar rutt...")
+        starter = "Förrätt\n"
+        main = "Huvudrätt\n"
+        desert = "Efterrätt\n"
         group = 0
         i = 1
         y = 2
@@ -174,7 +172,7 @@ class Hmi:
             group += 1
             i += 1
             y += 1
-        self.log_output(self.lang["progress_done_saving"])
+        self.log_output("Allt klart, sparar resultatet.")
         # Todo fix xlsx...
         if self.file_type == ".txt" or self.file_type == ".xlsx":
             # Text file.
@@ -185,7 +183,7 @@ class Hmi:
             # Open / create a new file and save the results.
             with open(os.path.join(self.file_path, filename), "w", encoding="utf8") as f:
                 f.write(result)
-            self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
+            self.log_output("Resultat sparat till {}".format(filename))
 
     def validate_number_of_participants(self):
         """
@@ -199,10 +197,10 @@ class Hmi:
             raise ValueError("Antal deltagare är inte delbart på 3")
         else:
             self.num_groups = int(len(self.list_participants) / 3)
-            self.log_output("{}: {}".format(self.lang["progress_found_participants"], len(self.list_participants)))
+            self.log_output("Hittat antal deltagare: {}".format(len(self.list_participants)))
 
     def generate_random_index(self):
-        self.log_output(self.lang["progress_gen_rand_list"])
+        self.log_output("Skapar slumplista...")
         i = 1
         self.list_rand_index = []
         while i <= len(self.list_participants):
@@ -214,7 +212,7 @@ class Hmi:
         """
         Generate a sorted... sort of unsorted... list of members based on random numbers.
         """
-        self.log_output(self.lang["progress_sort_unsort"])
+        self.log_output("Sorterar.. eller snarare osorterar... deltagarna")
         self.list_sorted_participants = []
         for index in self.list_rand_index:
             self.list_sorted_participants.append(self.list_participants[index-1])
@@ -233,7 +231,7 @@ class Hmi:
         try:
             self.validate_number_of_participants()
         except ValueError as e:
-            self.log_output("{}: {}".format(self.lang["error"], e))
+            self.log_output("Error: {}".format(e))
             return
         self.generate_random_index()
         self.sort_participants()
@@ -289,6 +287,5 @@ class Hmi:
 if __name__ == "__main__":
     root = tkinter.Tk()
     hmi = Hmi(root)
-    hmi.LANGUAGE = "swe"
     hmi.draw_main()
     root.mainloop()

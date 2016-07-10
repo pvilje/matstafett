@@ -7,14 +7,4 @@ file_selected;Selected file;Vald fil
 file_reading_.txt;Reading the txt file;Läser in txt-filen
 file_reading_.xlsx;Reading the xlsx file;Läser in xlsx-filen
 button_run;Run!;Kör!
-progress_gen_route;Generating Route...;Genererar rutt...
-progress_done_saving;All done, saving result;Allt klart, sparar resultatet
-progress_saved_to;Result saved to;Resultatet sparat till
-progress_found_participants;Found number of participants;Hittat antal deltagare
-progress_gen_rand_list;Generating randomized list...;Genererar slumplista...
-progress_sort_unsort;Sorting... or rather unsorting... the participants...;Sorterar.. eller snarare osorterar... deltagarna;
-starter;Starter;Förrätt
-main_course;Main course;Huvudrätt
-desert;Desert;Efterrätt
-error;Error;Fel
 
