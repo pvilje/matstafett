@@ -154,23 +154,32 @@ class Hmi:
         group = 0
         i = 1
         y = 2
+        host_s = []
+        host_m = []
+        host_d = []
         while group < self.num_groups:
             if i >= self.num_groups:
                 i = 0
             if y >= self.num_groups:
                 y = 0
-            starter += "Värd:{}Gäster:\n{}{}\n".format(
-                                                       self.groups_starter[group],
-                                                       self.groups_main[group],
-                                                       self.groups_desert[group])
-            main += "Värd:{}Gäster:\n{}{}\n".format(
-                                                    self.groups_main[i],
-                                                    self.groups_starter[group],
-                                                    self.groups_desert[y])
-            desert += "Värd:{}Gäster:\n{}{}\n".format(
-                                                      self.groups_desert[i],
-                                                      self.groups_starter[group],
-                                                      self.groups_main[y])
+            starter += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
+                                                 self.groups_starter[group],
+                                                 self.lang["guests"],
+                                                 self.groups_main[group],
+                                                 self.groups_desert[group])
+            main += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
+                                              self.groups_main[i],
+                                              self.lang["guests"],
+                                              self.groups_starter[group],
+                                              self.groups_desert[y])
+            desert += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
+                                                self.groups_desert[i],
+                                                self.lang["guests"],
+                                                self.groups_starter[group],
+                                                self.groups_main[y])
+            host_s.append(self.groups_starter[group])
+            host_m.append(self.groups_main[i])
+            host_d.append(self.groups_desert[i])
             group += 1
             i += 1
             y += 1
@@ -180,11 +189,19 @@ class Hmi:
             # Text file.
             # Create a new file since we dont want to mess with the source.
             filename = "new_" + self.file_name
-
             result = starter + main + desert
             # Open / create a new file and save the results.
             with open(os.path.join(self.file_path, filename), "w", encoding="utf8") as f:
-                f.write(result)
+                f.write("{}\n".format(self.lang["starter"]))
+                for name in host_s:
+                    f.write("{}".format(name))
+                f.write("\n{}\n".format(self.lang["main_course"]))
+                for name in host_m:
+                    f.write("{}".format(name))
+                f.write("\n{}\n".format(self.lang["desert"]))
+                for name in host_d:
+                    f.write("{}".format(name))
+                f.write("\n" + result)
             self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
 
     def validate_number_of_participants(self):
