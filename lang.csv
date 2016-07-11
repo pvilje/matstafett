@@ -17,5 +17,6 @@ starter;Starter;Förrätt
 main_course;Main course;Huvudrätt
 desert;Desert;Efterrätt
 error;Error;Fel
+error_save;Error while saving, make sure the selected file is not open and try again;Fel vid sparning, kolla att filen inte är öppen och försök igen
 host;Host;Värd
 guests;guests;gäster

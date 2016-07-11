@@ -21,9 +21,8 @@ from tkinter import filedialog
 
 
 class Hmi:
-    LANGUAGE = "eng"
 
-    def __init__(self, parent):
+    def __init__(self, parent, language="eng"):
         """
         Initialize the class
         :param parent: The master tk window
@@ -43,7 +42,7 @@ class Hmi:
         self.lang = {}
 
         # Get language pack
-        self.get_lang(language=self.LANGUAGE)
+        self.get_lang(language=language)
         parent.title(self.lang["title"])
 
         # Main frames and labels
@@ -148,45 +147,44 @@ class Hmi:
         Save the generated list to a file, Grouped and neatly ordered
         """
         self.log_output(self.lang["progress_gen_route"])
-        starter = self.lang["starter"]+"\n"
-        main = self.lang["main_course"]+"\n"
-        desert = self.lang["desert"]+"\n"
-        group = 0
-        i = 1
-        y = 2
-        host_s = []
-        host_m = []
-        host_d = []
-        while group < self.num_groups:
-            if i >= self.num_groups:
-                i = 0
-            if y >= self.num_groups:
-                y = 0
-            starter += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
-                                                 self.groups_starter[group],
-                                                 self.lang["guests"],
-                                                 self.groups_main[group],
-                                                 self.groups_desert[group])
-            main += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
-                                              self.groups_main[i],
-                                              self.lang["guests"],
-                                              self.groups_starter[group],
-                                              self.groups_desert[y])
-            desert += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
-                                                self.groups_desert[i],
-                                                self.lang["guests"],
-                                                self.groups_starter[group],
-                                                self.groups_main[y])
-            host_s.append(self.groups_starter[group])
-            host_m.append(self.groups_main[i])
-            host_d.append(self.groups_desert[i])
-            group += 1
-            i += 1
-            y += 1
-        self.log_output(self.lang["progress_done_saving"])
-        # Todo fix xlsx...
-        if self.file_type == ".txt" or self.file_type == ".xlsx":
-            # Text file.
+        if self.file_type == ".txt":
+            starter = self.lang["starter"]+"\n"
+            main = self.lang["main_course"]+"\n"
+            desert = self.lang["desert"]+"\n"
+            group = 0
+            i = 1
+            y = 2
+            host_s = []
+            host_m = []
+            host_d = []
+            while group < self.num_groups:
+                if i >= self.num_groups:
+                    i = 0
+                if y >= self.num_groups:
+                    y = 0
+                starter += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
+                                                     self.groups_starter[group],
+                                                     self.lang["guests"],
+                                                     self.groups_main[group],
+                                                     self.groups_desert[group])
+                main += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
+                                                  self.groups_main[i],
+                                                  self.lang["guests"],
+                                                  self.groups_starter[group],
+                                                  self.groups_desert[y])
+                desert += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
+                                                    self.groups_desert[i],
+                                                    self.lang["guests"],
+                                                    self.groups_starter[group],
+                                                    self.groups_main[y])
+                host_s.append(self.groups_starter[group])
+                host_m.append(self.groups_main[i])
+                host_d.append(self.groups_desert[i])
+                group += 1
+                i += 1
+                y += 1
+            self.log_output(self.lang["progress_done_saving"])
+
             # Create a new file since we dont want to mess with the source.
             filename = "new_" + self.file_name
             result = starter + main + desert
@@ -203,6 +201,117 @@ class Hmi:
                     f.write("{}".format(name))
                 f.write("\n" + result)
             self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
+        elif self.file_type == ".xlsx":
+            starter = []
+            main = []
+            desert = []
+            group = 0
+            i = 1
+            y = 2
+            host_s = []
+            host_m = []
+            host_d = []
+            while group < self.num_groups:
+                if i >= self.num_groups:
+                    i = 0
+                if y >= self.num_groups:
+                    y = 0
+                starter.append(self.lang["host"])
+                starter.append(self.groups_starter[group])
+                starter.append(self.lang["guests"])
+                starter.append(self.groups_main[group])
+                starter.append(self.groups_desert[group])
+
+                main.append(self.lang["host"])
+                main.append(self.groups_main[i])
+                main.append(self.lang["guests"])
+                main.append(self.groups_starter[group])
+                main.append(self.groups_desert[y])
+
+                desert.append(self.lang["host"])
+                desert.append(self.groups_desert[i])
+                desert.append(self.lang["guests"])
+                desert.append(self.groups_starter[group])
+                desert.append(self.groups_main[y])
+
+                host_s.append(self.groups_starter[group])
+                host_m.append(self.groups_main[i])
+                host_d.append(self.groups_desert[i])
+                group += 1
+                i += 1
+                y += 1
+            self.log_output(self.lang["progress_done_saving"])
+
+            # add info to the same file and worksheet
+            wb = openpyxl.load_workbook(self.file_name)
+            ws = wb.worksheets[0]
+            ws["C1"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
+            row = 2
+            for name in host_s:
+                ws["C{}".format(row)] = name
+                row += 1
+            row += 1
+            ws["C{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["main_course"])
+            row += 1
+            for name in host_m:
+                ws["C{}".format(row)] = name
+                row += 1
+            row += 1
+            ws["C{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["desert"])
+            row += 1
+            for name in host_d:
+                ws["C{}".format(row)] = name
+                row += 1
+            ws["D1"] = self.lang["starter"]
+            ws["D1"].font = ws["D1"].font.copy(bold=True, underline="single")
+            ws["F1"] = self.lang["main_course"]
+            ws["F1"].font = ws["F1"].font.copy(bold=True, underline="single")
+            ws["H1"] = self.lang["desert"]
+            ws["H1"].font = ws["H1"].font.copy(bold=True, underline="single")
+            row = 2
+            for line in starter:
+                if line not in self.list_participants:
+                    ws["D{}".format(row)] = line
+                    ws["D{}".format(row)].font = ws["D{}".format(row)].font.copy(bold=True)
+                elif line in host_s:
+                    ws["E{}".format(row)] = line
+                    ws["E{}".format(row)].font = ws["E{}".format(row)].font.copy(bold=True)
+                    row += 1
+                else:
+                    ws["E{}".format(row)] = line
+                    row += 1
+            row = 2
+            for line in main:
+                if line not in self.list_participants:
+                    ws["F{}".format(row)] = line
+                    ws["F{}".format(row)].font = ws["F{}".format(row)].font.copy(bold=True)
+                elif line in host_m:
+                    ws["G{}".format(row)] = line
+                    ws["G{}".format(row)].font = ws["G{}".format(row)].font.copy(bold=True)
+                    row += 1
+                else:
+                    ws["G{}".format(row)] = line
+                    row += 1
+            row = 2
+            for line in desert:
+                if line not in self.list_participants:
+                    ws["H{}".format(row)] = line
+                    ws["H{}".format(row)].font = ws["H{}".format(row)].font.copy(bold=True)
+                elif line in host_d:
+                    ws["I{}".format(row)] = line
+                    ws["I{}".format(row)].font = ws["I{}".format(row)].font.copy(bold=True)
+                    row += 1
+                else:
+                    ws["I{}".format(row)] = line
+                    row += 1
+            try:
+                wb.save(self.file_name)
+            except PermissionError:
+                self.log_output(self.lang["error_save"], "red")
+
+        else:
+            pass
+            # should not be possible to be here
 
     def validate_number_of_participants(self):
         """
@@ -305,7 +414,6 @@ class Hmi:
 
 if __name__ == "__main__":
     root = tkinter.Tk()
-    hmi = Hmi(root)
-    hmi.LANGUAGE = "swe"
+    hmi = Hmi(root, language="swe")
     hmi.draw_main()
     root.mainloop()
