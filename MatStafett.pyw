@@ -1,5 +1,5 @@
 """
-Project: Matstafett
+Project: Food Relay
 Author: Patrik Viljehav
 Version: 1.0
 Description:    Select an Excel (.xlsx) or notepad (.txt) document.
@@ -17,7 +17,7 @@ import tkinter
 import random
 import csv
 from tkinter import filedialog
-# from tkinter import messagebox
+from tkinter import messagebox
 
 
 class Hmi:
@@ -61,7 +61,7 @@ class Hmi:
 
         # Output widgets
         self.t_output = tkinter.Text(self.f_output, height=10, width=70, state=tkinter.DISABLED)
-        # Add colors and scrollbars to the output widget
+        # Add colors and scroll-bars to the output widget
         log_colors = ["black", "green", "blue", "red"]
         for color in log_colors:
             self.t_output.tag_config(color, foreground=color)
@@ -92,7 +92,7 @@ class Hmi:
         """
         Method to open a file dialog and validate the file type.
         """
-        file = filedialog.askopenfilename(title="Välj fil", initialdir=os.curdir,
+        file = filedialog.askopenfilename(title=self.lang["dialog_select_file"], initialdir=os.curdir,
                                           filetypes=self.list_supported_file_types)
         self.sv_filename.set(file)
         self.e_filename = self.sv_filename.get()
@@ -185,7 +185,7 @@ class Hmi:
                 y += 1
             self.log_output(self.lang["progress_done_saving"])
 
-            # Create a new file since we dont want to mess with the source.
+            # Create a new file since we don't want to mess with the source.
             filename = "new_" + self.file_name
             result = starter + main + desert
             # Open / create a new file and save the results.
@@ -201,7 +201,11 @@ class Hmi:
                     f.write("{}".format(name))
                 f.write("\n" + result)
             self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
+
         elif self.file_type == ".xlsx":
+            # Save the file name
+            file = os.path.join(self.file_path, self.file_name)
+            # Generate lineup
             starter = []
             main = []
             desert = []
@@ -243,7 +247,11 @@ class Hmi:
             self.log_output(self.lang["progress_done_saving"])
 
             # add info to the same file and worksheet
-            wb = openpyxl.load_workbook(self.file_name)
+            try:
+                wb = openpyxl.load_workbook(file)
+            except FileNotFoundError:
+                self.log_output("{}: {}".format(self.lang["error_file_not_found"], file), "red")
+                return
             ws = wb.worksheets[0]
             ws["C1"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
             row = 2
@@ -305,9 +313,14 @@ class Hmi:
                     ws["I{}".format(row)] = line
                     row += 1
             try:
-                wb.save(self.file_name)
+                wb.save(os.path.join(self.file_path, self.file_name))
             except PermissionError:
                 self.log_output(self.lang["error_save"], "red")
+            except FileNotFoundError:
+                self.log_output(self.lang["error_save"], "red")
+            else:
+                self.log_output(self.lang["progress_done"])
+                messagebox.showinfo(self.lang["progress_done"], "{}: {}".format(self.lang["dialog_done_msg"], file))
 
         else:
             pass
@@ -320,9 +333,9 @@ class Hmi:
         Raises ValueError if not.
         """
         if len(self.list_participants) < 9:
-            raise ValueError("Antal deltagare är mindre än 9")
+            raise ValueError(self.lang["error_less_than_nine"])
         elif len(self.list_participants) % 3 != 0:
-            raise ValueError("Antal deltagare är inte delbart på 3")
+            raise ValueError(self.lang["error_number_participants"])
         else:
             self.num_groups = int(len(self.list_participants) / 3)
             self.log_output("{}: {}".format(self.lang["progress_found_participants"], len(self.list_participants)))
@@ -363,7 +376,6 @@ class Hmi:
             return
         self.generate_random_index()
         self.sort_participants()
-        # Todo generate summary of who makes different parts of the meal
         self.save_to_file()
 
     def log_output(self, text, color="black"):
