@@ -16,7 +16,6 @@ They then split up and move on to a main course host where there also will be tw
 * (3 meals with 3 participants at each meal, regardless of the amount of participants each participant will have met 8 other participants at the end, each participant will have hosted a meal, each participant will have visited two others home)
 
 ## The program:
-v.1 will probably be in swedish, later version will include translation files... 
 Select an Excel (.xlsx) or notepad (.txt) document which only should contain a list of participants, nothing else.
 The script will calculate a setup where all participants will:
 * Get a certain part of the dinner to prepare.
@@ -24,3 +23,4 @@ The script will calculate a setup where all participants will:
 * Save the result in the same file type as was submitted to the script.
 * If an excel file is submitted, save the result in a new sheet (same file) nicely formatted.
 * If a txt file is submitted, save the result in a new txt document.
+* English and Swedish supported, more languages can be added by editing the lang.csv file.
