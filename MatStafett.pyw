@@ -31,7 +31,7 @@ class Hmi:
         self.file_type = ""
         self.file_name = None
         self.file_path = None
-        self.list_supported_file_types = [("Excel", "xlsx"), ("Text", "txt")]
+        self.list_supported_file_types = [("Excel", "*.xlsx"), ("Text", "*.txt")]
         self.list_participants = []
         self.list_sorted_participants = []
         self.groups_starter = []
