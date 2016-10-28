@@ -203,8 +203,20 @@ class Hmi:
             self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
 
         elif self.file_type == ".xlsx":
-            # Save the file name
-            file = os.path.join(self.file_path, self.file_name)
+            # Save to a new file, dont mess with the source.
+            # check if this is the first generated result
+            if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))):
+                # generate a new filename (add a number)
+                file_no = 2
+                while os.path.isfile(os.path.join(self.file_path, "{}_{}_{}".format(self.lang["result"],
+                                                                                    str(file_no),
+                                                                                    self.file_name))):
+                    file_no += 1
+                file = os.path.join(self.file_path, "{}_{}_{}".format(self.lang["result"], str(file_no),
+                                                                      self.file_name))
+
+            else:
+                file = os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))
             # Generate lineup
             starter = []
             main = []
@@ -246,42 +258,50 @@ class Hmi:
                 y += 1
             self.log_output(self.lang["progress_done_saving"])
 
-            # add info to the same file and worksheet
-            try:
-                wb = openpyxl.load_workbook(file)
-            except FileNotFoundError:
-                self.log_output("{}: {}".format(self.lang["error_file_not_found"], file), "red")
-                return
-            ws = wb.worksheets[0]
-            ws["C1"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = self.lang["title"]
+            ws["A1"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
             row = 2
             for name in host_s:
-                ws["C{}".format(row)] = name
+                ws["A{}".format(row)] = name
                 row += 1
             row += 1
-            ws["C{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["main_course"])
+            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["main_course"])
             row += 1
             for name in host_m:
-                ws["C{}".format(row)] = name
+                ws["A{}".format(row)] = name
                 row += 1
             row += 1
-            ws["C{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["desert"])
+            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["desert"])
             row += 1
             for name in host_d:
-                ws["C{}".format(row)] = name
+                ws["A{}".format(row)] = name
                 row += 1
-            ws["D1"] = self.lang["starter"]
+            ws["B1"] = self.lang["starter"]
+            ws["B1"].font = ws["B1"].font.copy(bold=True, underline="single")
+            ws["D1"] = self.lang["main_course"]
             ws["D1"].font = ws["D1"].font.copy(bold=True, underline="single")
-            ws["F1"] = self.lang["main_course"]
+            ws["F1"] = self.lang["desert"]
             ws["F1"].font = ws["F1"].font.copy(bold=True, underline="single")
-            ws["H1"] = self.lang["desert"]
-            ws["H1"].font = ws["H1"].font.copy(bold=True, underline="single")
             row = 2
             for line in starter:
                 if line not in self.list_participants:
+                    ws["B{}".format(row)] = line
+                    ws["B{}".format(row)].font = ws["B{}".format(row)].font.copy(bold=True)
+                elif line in host_s:
+                    ws["C{}".format(row)] = line
+                    ws["C{}".format(row)].font = ws["C{}".format(row)].font.copy(bold=True)
+                    row += 1
+                else:
+                    ws["C{}".format(row)] = line
+                    row += 1
+            row = 2
+            for line in main:
+                if line not in self.list_participants:
                     ws["D{}".format(row)] = line
                     ws["D{}".format(row)].font = ws["D{}".format(row)].font.copy(bold=True)
-                elif line in host_s:
+                elif line in host_m:
                     ws["E{}".format(row)] = line
                     ws["E{}".format(row)].font = ws["E{}".format(row)].font.copy(bold=True)
                     row += 1
@@ -289,31 +309,20 @@ class Hmi:
                     ws["E{}".format(row)] = line
                     row += 1
             row = 2
-            for line in main:
+            for line in desert:
                 if line not in self.list_participants:
                     ws["F{}".format(row)] = line
                     ws["F{}".format(row)].font = ws["F{}".format(row)].font.copy(bold=True)
-                elif line in host_m:
+                elif line in host_d:
                     ws["G{}".format(row)] = line
                     ws["G{}".format(row)].font = ws["G{}".format(row)].font.copy(bold=True)
                     row += 1
                 else:
                     ws["G{}".format(row)] = line
                     row += 1
-            row = 2
-            for line in desert:
-                if line not in self.list_participants:
-                    ws["H{}".format(row)] = line
-                    ws["H{}".format(row)].font = ws["H{}".format(row)].font.copy(bold=True)
-                elif line in host_d:
-                    ws["I{}".format(row)] = line
-                    ws["I{}".format(row)].font = ws["I{}".format(row)].font.copy(bold=True)
-                    row += 1
-                else:
-                    ws["I{}".format(row)] = line
-                    row += 1
             try:
-                wb.save(os.path.join(self.file_path, self.file_name))
+                # wb.save(os.path.join(self.file_path, self.file_name))
+                wb.save(filename=file)
             except PermissionError:
                 self.log_output(self.lang["error_save"], "red")
             except FileNotFoundError:

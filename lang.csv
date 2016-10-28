@@ -26,3 +26,4 @@ host;Host;Värd
 guests;guests;gäster
 dialog_select_file;Select File;Välj fil
 dialog_done_msg;Result saved to;Resultatet sparat till
+result;result;resultat
