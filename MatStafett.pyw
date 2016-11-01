@@ -408,7 +408,7 @@ class Hmi:
         cur_lang = {}
         try:
             with open(filename, "r", encoding="utf8") as csv_file:
-                reader = csv.DictReader(csv_file, delimiter=";")
+                reader = csv.DictReader(csv_file, delimiter=",")
                 for row in reader:
                     cur_lang[row["phrase"]] = row[language]
         except KeyError:

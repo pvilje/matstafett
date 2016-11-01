@@ -1,29 +1,29 @@
-phrase;eng;swe
-title;Food Relay;Matstafett
-error_file_types;Error: Can only open .txt or .xlsx (Excel) files. ;Fel: Kan bara öppna .txt eller .xlsx (Excel)-filer.
-error_no_file_selected; Error: No file selected :( ;Fel: Ingen fil vald :(
-file_select;select file;välj fil
-file_selected;Selected file;Vald fil
-file_reading_.txt;Reading the txt file;Läser in txt-filen
-file_reading_.xlsx;Reading the xlsx file;Läser in xlsx-filen
-button_run;Run!;Kör!
-progress_gen_route;Generating Route...;Genererar rutt...
-progress_done_saving;All done, saving result;Allt klart, sparar resultatet
-progress_saved_to;Result saved to;Resultatet sparat till
-progress_found_participants;Found number of participants;Hittat antal deltagare
-progress_gen_rand_list;Generating randomized list...;Genererar slumplista...
-progress_sort_unsort;Sorting... or rather unsorting... the participants...;Sorterar.. eller snarare osorterar... deltagarna;
-progress_done;Finished!;Klart!
-starter;Starter;Förrätt
-main_course;Main course;Huvudrätt
-desert;Desert;Efterrätt
-error;Error;Fel
-error_save;Error while saving, make sure the selected file is not open and try again;Fel vid sparning, kolla att filen inte är öppen och försök igen
-error_file_not_found;Error, Cannot find the file specified;Fel, Kan inte hitta filen
-error_less_than_nine;Error, the number of participants are less than nine;Fel, antalet deltagare är mindre än nio
-error_number_participants;Error, the number of participants is not a factor of three; Fel, antalet deltagare är inte en delbart med tre
-host;Host;Värd
-guests;guests;gäster
-dialog_select_file;Select File;Välj fil
-dialog_done_msg;Result saved to;Resultatet sparat till
-result;result;resultat
+phrase,eng,swe
+title,Food Relay,Matstafett
+error_file_types,Error: Can only open .txt or .xlsx (Excel) files. ,Fel: Kan bara öppna .txt eller .xlsx (Excel)-filer.
+error_no_file_selected, Error: No file selected :( ,Fel: Ingen fil vald :(
+file_select,select file,välj fil
+file_selected,Selected file,Vald fil
+file_reading_.txt,Reading the txt file,Läser in txt-filen
+file_reading_.xlsx,Reading the xlsx file,Läser in xlsx-filen
+button_run,Run!,Kör!
+progress_gen_route,Generating Route...,Genererar rutt...
+progress_done_saving,"All done, saving result","Allt klart, sparar resultatet"
+progress_saved_to,Result saved to,Resultatet sparat till
+progress_found_participants,Found number of participants,Hittat antal deltagare
+progress_gen_rand_list,Generating randomized list...,Genererar slumplista...
+progress_sort_unsort,Sorting... or rather unsorting... the participants...,Sorterar.. eller snarare osorterar... deltagarna,
+progress_done,Finished!,Klart!
+starter,Starter,Förrätt
+main_course,Main course,Huvudrätt
+desert,Desert,Efterrätt
+error,Error,Fel
+error_save,"Error while saving, make sure the selected file is not open and try again","Fel vid sparning, kolla att filen inte är öppen och försök igen"
+error_file_not_found,"Error, Cannot find the file specified","Fel, Kan inte hitta filen"
+error_less_than_nine,"Error, the number of participants are less than nine","Fel, antalet deltagare är mindre än nio"
+error_number_participants,"Error, the number of participants is not a factor of three","Fel, antalet deltagare är inte en delbart med tre"
+host,Host,Värd
+guests,guests,gäster
+dialog_select_file,Select File,Välj fil
+dialog_done_msg,Result saved to,Resultatet sparat till
+result,result,resultat
