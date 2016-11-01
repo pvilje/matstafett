@@ -12,7 +12,7 @@ progress_done_saving,"All done, saving result","Allt klart, sparar resultatet"
 progress_saved_to,Result saved to,Resultatet sparat till
 progress_found_participants,Found number of participants,Hittat antal deltagare
 progress_gen_rand_list,Generating randomized list...,Genererar slumplista...
-progress_sort_unsort,Sorting... or rather unsorting... the participants...,Sorterar.. eller snarare osorterar... deltagarna,
+progress_sort_unsort,Sorting... or rather unsorting... the participants...,Sorterar.. eller snarare osorterar... deltagarna
 progress_done,Finished!,Klart!
 starter,Starter,Förrätt
 main_course,Main course,Huvudrätt
