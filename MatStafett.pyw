@@ -203,7 +203,7 @@ class Hmi:
             self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
 
         elif self.file_type == ".xlsx":
-            # Save to a new file, dont mess with the source.
+            # Save to a new file, don't mess with the source.
             # check if this is the first generated result
             if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))):
                 # generate a new filename (add a number)
@@ -415,7 +415,6 @@ class Hmi:
             pass
         except FileNotFoundError:
             pass
-            # Todo handle error
         self.lang = cur_lang
 
     def get_str(self, phrase):
@@ -431,7 +430,6 @@ class Hmi:
         except KeyError:
             string = "Invalid phrase to print: {}".format(phrase)
             return string
-        # Todo handle errors correctly
 
 if __name__ == "__main__":
     root = tkinter.Tk()
