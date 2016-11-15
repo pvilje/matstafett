@@ -92,10 +92,14 @@ class Hmi:
         """
         Method to open a file dialog and validate the file type.
         """
+        # Select file dialog.
         file = filedialog.askopenfilename(title=self.lang["dialog_select_file"], initialdir=os.curdir,
                                           filetypes=self.list_supported_file_types)
+        # populate String-var and entry.
         self.sv_filename.set(file)
         self.e_filename = self.sv_filename.get()
+
+        # Validate file, assume success
         file_ok = True
         if len(file) > 0:
             if file.endswith(".txt"):
@@ -109,6 +113,7 @@ class Hmi:
             file_ok = False
             self.log_output(self.lang["error_no_file_selected"], "red")
 
+        # Activate / deactivate run-button depending on file validation result
         if file_ok:
             self.b_run.configure(state=tkinter.ACTIVE)
             self.file_path, self.file_name = os.path.split(file)
@@ -124,13 +129,18 @@ class Hmi:
         """
         Read the participant list in the selected file.
         """
+        # prepare to get all participants
         self.list_participants = []
         file = os.path.join(self.file_path, self.file_name)
         self.log_output(self.lang["file_reading_{}".format(self.file_type)])
+
+        # If it is a txt file, just loop through all the lines, assume every line is a participant
         if self.file_type == ".txt":
             with open(file, "r") as f:
                 for line in f:
                     self.list_participants.append(line)
+
+        # If it is a xlsx file check column A for participants.
         elif self.file_type == ".xlsx":
             wb = openpyxl.load_workbook(file, use_iterators=True)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
