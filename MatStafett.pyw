@@ -268,68 +268,93 @@ class Hmi:
                 y += 1
             self.log_output(self.lang["progress_done_saving"])
 
+            # Open workbook
             wb = openpyxl.Workbook()
             ws = wb.active
             ws.title = self.lang["title"]
-            ws["A1"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
-            row = 2
+            # Setup styles
+            ws.column_dimensions["A"].width = 34
+            ws.column_dimensions["C"].width = 34
+            ws.column_dimensions["D"].width = 34
+            ws.column_dimensions["E"].width = 34
+
+            # Column A, summary of participants
+            # =================================
+
+            # Summary header
+            ws["A1"] = "{}".format(self.lang["summary"])
+
+            # Starter participants
+            ws["A2"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
+            row = 3
             for name in host_s:
                 ws["A{}".format(row)] = name
                 row += 1
-            row += 1
+            row += 2
+
+            # Main course participants
             ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["main_course"])
             row += 1
             for name in host_m:
                 ws["A{}".format(row)] = name
                 row += 1
-            row += 1
+            row += 2
+
+            # Desert participants
             ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["desert"])
             row += 1
             for name in host_d:
                 ws["A{}".format(row)] = name
                 row += 1
-            ws["B1"] = self.lang["starter"]
-            ws["B1"].font = ws["B1"].font.copy(bold=True, underline="single")
-            ws["D1"] = self.lang["main_course"]
-            ws["D1"].font = ws["D1"].font.copy(bold=True, underline="single")
-            ws["F1"] = self.lang["desert"]
-            ws["F1"].font = ws["F1"].font.copy(bold=True, underline="single")
-            row = 2
+
+            # Column C, D, E: result
+            # =================================
+            # Starters
+            ws.merge_cells("C1:E1")
+            ws["C1"] = self.lang["starter"]
+            # ws["D1"] = self.lang["main_course"]
+            # ws["D1"].font = ws["D1"].font.copy(bold=True, underline="single")
+            # ws["F1"] = self.lang["desert"]
+            # ws["F1"].font = ws["F1"].font.copy(bold=True, underline="single")
+            ws["C2"] = self.lang["host"]
+            ws["D2"] = self.lang["guest"]
+            ws["E2"] = self.lang["guest"]
+            row = 3
             for line in starter:
-                if line not in self.list_participants:
-                    ws["B{}".format(row)] = line
-                    ws["B{}".format(row)].font = ws["B{}".format(row)].font.copy(bold=True)
-                elif line in host_s:
+                #     if line not in self.list_participants:
+                #         ws["B{}".format(row)] = line
+                #         ws["B{}".format(row)].font = ws["B{}".format(row)].font.copy(bold=True)
+                if line in host_s:
                     ws["C{}".format(row)] = line
-                    ws["C{}".format(row)].font = ws["C{}".format(row)].font.copy(bold=True)
+                    # ws["C{}".format(row)].font = ws["C{}".format(row)].font.copy(bold=True)
                     row += 1
                 else:
                     ws["C{}".format(row)] = line
                     row += 1
-            row = 2
-            for line in main:
-                if line not in self.list_participants:
-                    ws["D{}".format(row)] = line
-                    ws["D{}".format(row)].font = ws["D{}".format(row)].font.copy(bold=True)
-                elif line in host_m:
-                    ws["E{}".format(row)] = line
-                    ws["E{}".format(row)].font = ws["E{}".format(row)].font.copy(bold=True)
-                    row += 1
-                else:
-                    ws["E{}".format(row)] = line
-                    row += 1
-            row = 2
-            for line in desert:
-                if line not in self.list_participants:
-                    ws["F{}".format(row)] = line
-                    ws["F{}".format(row)].font = ws["F{}".format(row)].font.copy(bold=True)
-                elif line in host_d:
-                    ws["G{}".format(row)] = line
-                    ws["G{}".format(row)].font = ws["G{}".format(row)].font.copy(bold=True)
-                    row += 1
-                else:
-                    ws["G{}".format(row)] = line
-                    row += 1
+            # row = 2
+            # for line in main:
+            #     if line not in self.list_participants:
+            #         ws["D{}".format(row)] = line
+            #         ws["D{}".format(row)].font = ws["D{}".format(row)].font.copy(bold=True)
+            #     elif line in host_m:
+            #         ws["E{}".format(row)] = line
+            #         ws["E{}".format(row)].font = ws["E{}".format(row)].font.copy(bold=True)
+            #         row += 1
+            #     else:
+            #         ws["E{}".format(row)] = line
+            #         row += 1
+            # row = 2
+            # for line in desert:
+            #     if line not in self.list_participants:
+            #         ws["F{}".format(row)] = line
+            #         ws["F{}".format(row)].font = ws["F{}".format(row)].font.copy(bold=True)
+            #     elif line in host_d:
+            #         ws["G{}".format(row)] = line
+            #         ws["G{}".format(row)].font = ws["G{}".format(row)].font.copy(bold=True)
+            #         row += 1
+            #     else:
+            #         ws["G{}".format(row)] = line
+            #         row += 1
             try:
                 # wb.save(os.path.join(self.file_path, self.file_name))
                 wb.save(filename=file)
