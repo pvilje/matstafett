@@ -151,7 +151,7 @@ class Hmi:
 
         # If it is a xlsx file check column A for participants.
         elif self.file_type == ".xlsx":
-            wb = openpyxl.load_workbook(file, use_iterators=True)
+            wb = openpyxl.load_workbook(file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
             for row in ws.iter_rows("A1:A{}".format(max_rows)):
