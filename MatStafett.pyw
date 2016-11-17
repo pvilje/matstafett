@@ -40,6 +40,15 @@ class Hmi:
         self.list_rand_index = []
         self.num_groups = None
         self.lang = {}
+        self.host_s = []
+        self.host_m = []
+        self.host_d = []
+        self.guest_s_1 = []
+        self.guest_s_2 = []
+        self.guest_m_1 = []
+        self.guest_m_2 = []
+        self.guest_d_1 = []
+        self.guest_d_2 = []
 
         # Get language pack
         self.get_lang(language=language)
@@ -152,64 +161,79 @@ class Hmi:
         else:
             self.log_output(self.lang["error_file_types"], "red")
 
+    def create_lineup(self):
+        """
+        Create a lineup for the food rally.
+        """
+        # Generate lineup
+        base_index = 0
+        offset_1 = 1
+        offset_2 = 2
+        self.host_s = []
+        self.host_m = []
+        self.host_d = []
+        self.guest_s_1 = []
+        self.guest_s_2 = []
+        self.guest_m_1 = []
+        self.guest_m_2 = []
+        self.guest_d_1 = []
+        self.guest_d_2 = []
+
+        # loop through all groups, using three indexes for the group arrays
+        while base_index < self.num_groups:
+            if offset_1 >= self.num_groups:
+                offset_1 = 0
+            if offset_2 >= self.num_groups:
+                offset_2 = 0
+            # starters
+            self.host_s.append(self.groups_starter[base_index])
+            self.guest_s_1.append(self.groups_main[base_index])
+            self.guest_s_2.append(self.groups_desert[base_index])
+
+            # main course
+            self.host_m.append(self.groups_main[offset_1])
+            self.guest_m_1.append(self.groups_starter[base_index])
+            self.guest_m_2.append(self.groups_desert[offset_2])
+
+            # desert
+            self.host_d.append(self.groups_desert[offset_1])
+            self.guest_d_1.append(self.groups_starter[base_index])
+            self.guest_d_2.append(self.groups_main[offset_2])
+
+            base_index += 1
+            offset_1 += 1
+            offset_2 += 1
+
     def save_to_file(self):
         """
         Save the generated list to a file, Grouped and neatly ordered
         """
         self.log_output(self.lang["progress_gen_route"])
         if self.file_type == ".txt":
-            starter = self.lang["starter"]+"\n"
-            main = self.lang["main_course"]+"\n"
-            desert = self.lang["desert"]+"\n"
-            group = 0
-            i = 1
-            y = 2
-            host_s = []
-            host_m = []
-            host_d = []
-            while group < self.num_groups:
-                if i >= self.num_groups:
-                    i = 0
-                if y >= self.num_groups:
-                    y = 0
-                starter += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
-                                                     self.groups_starter[group],
-                                                     self.lang["guests"],
-                                                     self.groups_main[group],
-                                                     self.groups_desert[group])
-                main += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
-                                                  self.groups_main[i],
-                                                  self.lang["guests"],
-                                                  self.groups_starter[group],
-                                                  self.groups_desert[y])
-                desert += "{}:{}{}:\n{}{}\n".format(self.lang["host"],
-                                                    self.groups_desert[i],
-                                                    self.lang["guests"],
-                                                    self.groups_starter[group],
-                                                    self.groups_main[y])
-                host_s.append(self.groups_starter[group])
-                host_m.append(self.groups_main[i])
-                host_d.append(self.groups_desert[i])
-                group += 1
-                i += 1
-                y += 1
-            self.log_output(self.lang["progress_done_saving"])
 
             # Create a new file since we don't want to mess with the source.
             filename = "new_" + self.file_name
-            result = starter + main + desert
+            # result = starter + main + desert
             # Open / create a new file and save the results.
             with open(os.path.join(self.file_path, filename), "w", encoding="utf8") as f:
                 f.write("{}\n".format(self.lang["starter"]))
-                for name in host_s:
-                    f.write("{}".format(name))
-                f.write("\n{}\n".format(self.lang["main_course"]))
-                for name in host_m:
-                    f.write("{}".format(name))
-                f.write("\n{}\n".format(self.lang["desert"]))
-                for name in host_d:
-                    f.write("{}".format(name))
-                f.write("\n" + result)
+                for index, host in enumerate(self.host_s):
+                    f.write("{}: {}".format(self.lang["host"], host))
+                    f.write("{}: {}".format(self.lang["guest"], self.guest_s_1[index]))
+                    f.write("{}: {}\n".format(self.lang["guest"], self.guest_s_2[index]))
+
+                f.write("{}\n".format(self.lang["main_course"]))
+                for index, host in enumerate(self.host_m):
+                    f.write("{}: {}".format(self.lang["host"], host))
+                    f.write("{}: {}".format(self.lang["guest"], self.guest_m_1[index]))
+                    f.write("{}: {}\n".format(self.lang["guest"], self.guest_m_2[index]))
+
+                f.write("{}\n".format(self.lang["desert"]))
+                for index, host in enumerate(self.host_d):
+                    f.write("{}: {}".format(self.lang["host"], host))
+                    f.write("{}: {}".format(self.lang["guest"], self.guest_d_1[index]))
+                    f.write("{}: {}\n".format(self.lang["guest"], self.guest_d_2[index]))
+
             self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
 
         elif self.file_type == ".xlsx":
@@ -218,55 +242,15 @@ class Hmi:
             if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))):
                 # generate a new filename (add a number)
                 file_no = 2
-                while os.path.isfile(os.path.join(self.file_path, "{}_{}_{}".format(self.lang["result"],
-                                                                                    str(file_no),
-                                                                                    self.file_name))):
+                while os.path.isfile(
+                        os.path.join(
+                            self.file_path, "{}_{}_{}".format(self.lang["result"], str(file_no), self.file_name))):
                     file_no += 1
-                file = os.path.join(self.file_path, "{}_{}_{}".format(self.lang["result"], str(file_no),
-                                                                      self.file_name))
+                file = os.path.join(
+                    self.file_path, "{}_{}_{}".format(self.lang["result"], str(file_no), self.file_name))
 
             else:
                 file = os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))
-            # Generate lineup
-            starter = []
-            main = []
-            desert = []
-            group = 0
-            i = 1
-            y = 2
-            host_s = []
-            host_m = []
-            host_d = []
-            while group < self.num_groups:
-                if i >= self.num_groups:
-                    i = 0
-                if y >= self.num_groups:
-                    y = 0
-                starter.append(self.lang["host"])
-                starter.append(self.groups_starter[group])
-                starter.append(self.lang["guests"])
-                starter.append(self.groups_main[group])
-                starter.append(self.groups_desert[group])
-
-                main.append(self.lang["host"])
-                main.append(self.groups_main[i])
-                main.append(self.lang["guests"])
-                main.append(self.groups_starter[group])
-                main.append(self.groups_desert[y])
-
-                desert.append(self.lang["host"])
-                desert.append(self.groups_desert[i])
-                desert.append(self.lang["guests"])
-                desert.append(self.groups_starter[group])
-                desert.append(self.groups_main[y])
-
-                host_s.append(self.groups_starter[group])
-                host_m.append(self.groups_main[i])
-                host_d.append(self.groups_desert[i])
-                group += 1
-                i += 1
-                y += 1
-            self.log_output(self.lang["progress_done_saving"])
 
             # Open workbook
             wb = openpyxl.Workbook()
@@ -284,79 +268,76 @@ class Hmi:
             # Summary header
             ws["A1"] = "{}".format(self.lang["summary"])
 
-            # Starter participants
+            # Starter hosts
             ws["A2"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
             row = 3
-            for name in host_s:
+            for name in self.host_s:
                 ws["A{}".format(row)] = name
                 row += 1
             row += 2
 
-            # Main course participants
+            # Main course hosts
             ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["main_course"])
             row += 1
-            for name in host_m:
+            for name in self.host_m:
                 ws["A{}".format(row)] = name
                 row += 1
             row += 2
 
-            # Desert participants
+            # Desert hosts
             ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["desert"])
             row += 1
-            for name in host_d:
+            for name in self.host_d:
                 ws["A{}".format(row)] = name
                 row += 1
 
-            # Column C, D, E: result
+            # Column C, D, E: results
             # =================================
             # Starters
             ws.merge_cells("C1:E1")
             ws["C1"] = self.lang["starter"]
-            # ws["D1"] = self.lang["main_course"]
-            # ws["D1"].font = ws["D1"].font.copy(bold=True, underline="single")
-            # ws["F1"] = self.lang["desert"]
-            # ws["F1"].font = ws["F1"].font.copy(bold=True, underline="single")
             ws["C2"] = self.lang["host"]
             ws["D2"] = self.lang["guest"]
             ws["E2"] = self.lang["guest"]
             row = 3
-            for line in starter:
-                #     if line not in self.list_participants:
-                #         ws["B{}".format(row)] = line
-                #         ws["B{}".format(row)].font = ws["B{}".format(row)].font.copy(bold=True)
-                if line in host_s:
-                    ws["C{}".format(row)] = line
-                    # ws["C{}".format(row)].font = ws["C{}".format(row)].font.copy(bold=True)
-                    row += 1
-                else:
-                    ws["C{}".format(row)] = line
-                    row += 1
-            # row = 2
-            # for line in main:
-            #     if line not in self.list_participants:
-            #         ws["D{}".format(row)] = line
-            #         ws["D{}".format(row)].font = ws["D{}".format(row)].font.copy(bold=True)
-            #     elif line in host_m:
-            #         ws["E{}".format(row)] = line
-            #         ws["E{}".format(row)].font = ws["E{}".format(row)].font.copy(bold=True)
-            #         row += 1
-            #     else:
-            #         ws["E{}".format(row)] = line
-            #         row += 1
-            # row = 2
-            # for line in desert:
-            #     if line not in self.list_participants:
-            #         ws["F{}".format(row)] = line
-            #         ws["F{}".format(row)].font = ws["F{}".format(row)].font.copy(bold=True)
-            #     elif line in host_d:
-            #         ws["G{}".format(row)] = line
-            #         ws["G{}".format(row)].font = ws["G{}".format(row)].font.copy(bold=True)
-            #         row += 1
-            #     else:
-            #         ws["G{}".format(row)] = line
-            #         row += 1
+            for index, host in enumerate(self.host_s):
+                ws["C{}".format(row)] = host
+                ws["D{}".format(row)] = self.guest_s_1[index]
+                ws["E{}".format(row)] = self.guest_s_2[index]
+                row += 1
+
+            # Main Course
+            row += 1
+            ws.merge_cells("C{}:E{}".format(row, row))
+            ws["C{}".format(row)] = self.lang["main_course"]
+            row += 1
+            ws["C{}".format(row)] = self.lang["host"]
+            ws["D{}".format(row)] = self.lang["guest"]
+            ws["E{}".format(row)] = self.lang["guest"]
+            row += 1
+            for index, host in enumerate(self.host_m):
+                ws["C{}".format(row)] = host
+                ws["D{}".format(row)] = self.guest_m_1[index]
+                ws["E{}".format(row)] = self.guest_m_2[index]
+                row += 1
+
+            # Desert
+            row += 1
+            ws.merge_cells("C{}:E{}".format(row, row))
+            ws["C{}".format(row)] = self.lang["desert"]
+            row += 1
+            ws["C{}".format(row)] = self.lang["host"]
+            ws["D{}".format(row)] = self.lang["guest"]
+            ws["E{}".format(row)] = self.lang["guest"]
+            row += 1
+            for index, host in enumerate(self.host_d):
+                ws["C{}".format(row)] = host
+                ws["D{}".format(row)] = self.guest_d_1[index]
+                ws["E{}".format(row)] = self.guest_d_2[index]
+                row += 1
+
+            # Save!
             try:
-                # wb.save(os.path.join(self.file_path, self.file_name))
                 wb.save(filename=file)
             except PermissionError:
                 self.log_output(self.lang["error_save"], "red")
@@ -420,6 +401,9 @@ class Hmi:
             return
         self.generate_random_index()
         self.sort_participants()
+        self.create_lineup()
+
+        self.log_output(self.lang["progress_done_saving"])
         self.save_to_file()
 
     def log_output(self, text, color="black"):
