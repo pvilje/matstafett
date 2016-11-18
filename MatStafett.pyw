@@ -22,6 +22,7 @@ import random
 import csv
 from tkinter import filedialog
 from tkinter import messagebox
+from openpyxl.styles import *
 
 
 class Hmi:
@@ -265,15 +266,26 @@ class Hmi:
             ws.column_dimensions["C"].width = 34
             ws.column_dimensions["D"].width = 34
             ws.column_dimensions["E"].width = 34
-
+            h1 = NamedStyle(name="h1", font=Font(size=15, bold=True, color="1f497d"),
+                            border=Border(bottom=Side(style="thick", color="4f81bd")))
+            h1_center = NamedStyle(name="h1_center", font=Font(size=15, bold=True, color="1f497d"),
+                                   border=Border(bottom=Side(style="thick", color="4f81bd")),
+                                   alignment=Alignment(horizontal="center"))
+            h2 = NamedStyle(name="h2", font=Font(size=13, bold=True, color="1f497d"),
+                            border=Border(bottom=Side(style="thick", color="a7bfde")))
+            h2_center = NamedStyle(name="h2_center", font=Font(size=13, bold=True, color="1f497d"),
+                                   border=Border(bottom=Side(style="thick", color="a7bfde")),
+                                   alignment=Alignment(horizontal="center"))
             # Column A, summary of participants
             # =================================
 
             # Summary header
             ws["A1"] = "{}".format(self.lang["summary"])
+            ws["A1"].style = h1
 
             # Starter hosts
             ws["A2"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
+            ws["A2"].style = h2
             row = 3
             for name in self.host_s:
                 ws["A{}".format(row)] = name
@@ -282,6 +294,7 @@ class Hmi:
 
             # Main course hosts
             ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["main_course"])
+            ws["A{}".format(row)].style = h2
             row += 1
             for name in self.host_m:
                 ws["A{}".format(row)] = name
@@ -290,6 +303,7 @@ class Hmi:
 
             # Desert hosts
             ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["desert"])
+            ws["A{}".format(row)].style = h2
             row += 1
             for name in self.host_d:
                 ws["A{}".format(row)] = name
@@ -300,9 +314,15 @@ class Hmi:
             # Starters
             ws.merge_cells("C1:E1")
             ws["C1"] = self.lang["starter"]
+            ws["C1"].style = h1_center
+            ws["D1"].style = h1_center  # needed for the border, even though the cells are merged
+            ws["E1"].style = h1_center  # needed for the border, even though the cells are merged
             ws["C2"] = self.lang["host"]
             ws["D2"] = self.lang["guest"]
             ws["E2"] = self.lang["guest"]
+            ws["C2"].style = h2_center
+            ws["D2"].style = h2_center
+            ws["E2"].style = h2_center
             row = 3
             for index, host in enumerate(self.host_s):
                 ws["C{}".format(row)] = host
@@ -314,10 +334,16 @@ class Hmi:
             row += 1
             ws.merge_cells("C{}:E{}".format(row, row))
             ws["C{}".format(row)] = self.lang["main_course"]
+            ws["C{}".format(row)].style = h1_center
+            ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
+            ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
             ws["C{}".format(row)] = self.lang["host"]
             ws["D{}".format(row)] = self.lang["guest"]
             ws["E{}".format(row)] = self.lang["guest"]
+            ws["C{}".format(row)].style = h2_center
+            ws["D{}".format(row)].style = h2_center
+            ws["E{}".format(row)].style = h2_center
             row += 1
             for index, host in enumerate(self.host_m):
                 ws["C{}".format(row)] = host
@@ -329,10 +355,16 @@ class Hmi:
             row += 1
             ws.merge_cells("C{}:E{}".format(row, row))
             ws["C{}".format(row)] = self.lang["desert"]
+            ws["C{}".format(row)].style = h1_center
+            ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
+            ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
             ws["C{}".format(row)] = self.lang["host"]
             ws["D{}".format(row)] = self.lang["guest"]
             ws["E{}".format(row)] = self.lang["guest"]
+            ws["C{}".format(row)].style = h2_center
+            ws["D{}".format(row)].style = h2_center
+            ws["E{}".format(row)].style = h2_center
             row += 1
             for index, host in enumerate(self.host_d):
                 ws["C{}".format(row)] = host
