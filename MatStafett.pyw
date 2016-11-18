@@ -8,6 +8,10 @@ Description:    Select an Excel (.xlsx) or notepad (.txt) document.
                     * Get a certain part of the dinner to prepare.
                     * Meet new people at every part of the dinner
                     * Save the result in the same file type as was submitted to the script (this can be changed)
+
+Non standard Dependencies:
+                * openpyxl 2.4.0
+
 """
 
 # Import needed modules
@@ -154,7 +158,7 @@ class Hmi:
             wb = openpyxl.load_workbook(file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
-            for row in ws.iter_rows("A1:A{}".format(max_rows)):
+            for row in ws["A1:A{}".format(max_rows)]:
                 for cell in row:
                     if cell.value is not None:
                         self.list_participants.append(cell.value)
@@ -234,7 +238,7 @@ class Hmi:
                     f.write("{}: {}".format(self.lang["guest"], self.guest_d_1[index]))
                     f.write("{}: {}\n".format(self.lang["guest"], self.guest_d_2[index]))
 
-            self.log_output("{} {}".format(self.lang["progress_saved_to"], filename))
+            self.log_output("{} \n{}".format(self.lang["progress_saved_to"], filename))
 
         elif self.file_type == ".xlsx":
             # Save to a new file, don't mess with the source.
@@ -345,6 +349,7 @@ class Hmi:
                 self.log_output(self.lang["error_save"], "red")
             else:
                 self.log_output(self.lang["progress_done"])
+                self.log_output("{} \n{}".format(self.lang["progress_saved_to"], file))
                 messagebox.showinfo(self.lang["progress_done"], "{}: {}".format(self.lang["dialog_done_msg"], file))
 
         else:
