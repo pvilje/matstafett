@@ -152,7 +152,10 @@ class Hmi:
         if self.file_type == ".txt":
             with open(file, "r") as f:
                 for line in f:
-                    self.list_participants.append(line)
+                    # Ignore blank lines
+                    if line.strip():
+                        print(len(line))
+                        self.list_participants.append(line)
 
         # If it is a xlsx file check column A for participants.
         elif self.file_type == ".xlsx":
