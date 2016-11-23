@@ -21,6 +21,6 @@ The script will calculate a setup where all participants will:
 * Get a certain part of the dinner to prepare.
 * Meet new people at every part of the dinner
 * Save the result in the same file type as was submitted to the script.
-* If an excel file is submitted, save the result in a new sheet (same file) nicely formatted.
+* If an excel file is submitted, save the result in a new excel file nicely formatted.
 * If a txt file is submitted, save the result in a new txt document.
 * English and Swedish supported, more languages can be added by editing the lang.csv file.
