@@ -24,6 +24,8 @@ from tkinter import filedialog
 from tkinter import messagebox
 from openpyxl.styles import *
 
+OPENPYXL_VERSION = "2.4.0"
+
 
 class Hmi:
 
@@ -82,6 +84,12 @@ class Hmi:
         self.scroll_x_output = tkinter.Scrollbar(self.f_output, command=self.t_output.xview, orient=tkinter.HORIZONTAL)
         self.scroll_y_output = tkinter.Scrollbar(self.f_output, command=self.t_output.yview)
         self.t_output.configure(yscrollcommand=self.scroll_y_output.set, xscrollcommand=self.scroll_x_output.set)
+
+        # Check openpyxl version
+        if openpyxl.__version__ != OPENPYXL_VERSION:
+            tkinter.messagebox.showwarning("Unexpected version difference",
+                                           "This program uses openpyxl version: {} \nopenpyxl version installed: {}"
+                                           .format(OPENPYXL_VERSION, openpyxl.__version__))
 
     def draw_main(self):
         """
