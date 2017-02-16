@@ -147,6 +147,9 @@ class Hmi:
             self.file_path = None
             self.file_type = ""
 
+    def dummy(self):
+        pass
+
     def read_file_contents(self):
         """
         Read the participant list in the selected file.
