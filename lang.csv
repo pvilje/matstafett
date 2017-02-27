@@ -7,6 +7,7 @@ file_selected,Selected file,Vald fil
 file_reading_.txt,Reading the txt file,Läser in txt-filen
 file_reading_.xlsx,Reading the xlsx file,Läser in xlsx-filen
 button_run,Run!,Kör!
+button_same_lineup,Start from earlier lineup,Utgå från tidigare startfält
 progress_gen_route,Generating Route...,Genererar rutt...
 progress_done_saving,"All done, saving result","Allt klart, sparar resultatet"
 progress_saved_to,Result saved to,Resultatet sparat till

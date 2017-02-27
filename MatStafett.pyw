@@ -2,6 +2,7 @@
 Project: Food Relay
 Author: Patrik Viljehav
 Version: 1.0
+URL: https://github.com/pvilje/matstafett
 Description:    Select an Excel (.xlsx) or notepad (.txt) document.
                 The script will calculate a setup where all participants
                 will:
@@ -33,6 +34,7 @@ class Hmi:
         :param parent: The master tk window
         """
         # variables
+        # ==========
         self.file_type = ""
         self.file_name = None
         self.file_path = None
@@ -56,26 +58,50 @@ class Hmi:
         self.guest_d_2 = []
 
         # Get language pack
+        # =================
         self.get_lang(language=language)
         parent.title(self.lang["title"])
 
+        # ================
+        # tkinter stuff...
+        # ================
+
         # Main frames and labels
+        # ======================
         self.l_title = tkinter.Label(parent, text=self.lang["title"])
         self.f_input = tkinter.Frame(parent, pady=10, padx=10)
         self.f_output = tkinter.Frame(parent, pady=10, padx=10)
         
         # TK Variables
+        # ============
         self.sv_filename = tkinter.StringVar()
+        self.iv_new_year_same_lineup = tkinter.IntVar()
         
         # Input widgets
-        self.e_filename = tkinter.Entry(self.f_input, textvariable=self.sv_filename, width=30)
-        self.b_select_file = tkinter.Button(self.f_input, text=self.lang["file_select"], command=self.select_file)
-        self.b_run = tkinter.Button(self.f_input, text=self.lang["button_run"], command=self.generate_result,
-                                    state=tkinter.DISABLED, height=3, width=10)
+        # =============
+        self.e_filename = tkinter.Entry(self.f_input,
+                                        textvariable=self.sv_filename,
+                                        width=60)
+        self.b_select_file = tkinter.Button(self.f_input,
+                                            text=self.lang["file_select"],
+                                            command=self.select_file)
+        self.b_run = tkinter.Button(self.f_input,
+                                    text=self.lang["button_run"],
+                                    command=self.generate_result,
+                                    state=tkinter.DISABLED,
+                                    height=3, width=10)
+        self.cb_new_year_same_lineup = tkinter.Checkbutton(self.f_input,
+                                                           text=self.lang["button_same_lineup"],
+                                                           variable=self.iv_new_year_same_lineup)
 
         # Output widgets
-        self.t_output = tkinter.Text(self.f_output, height=10, width=70, state=tkinter.DISABLED)
+        # ==============
+        self.t_output = tkinter.Text(self.f_output,
+                                     height=10, width=70,
+                                     state=tkinter.DISABLED)
+
         # Add colors and scroll-bars to the output widget
+        # ===============================================
         log_colors = ["black", "green", "blue", "red"]
         for color in log_colors:
             self.t_output.tag_config(color, foreground=color)
@@ -92,9 +118,10 @@ class Hmi:
 
         # input frame
         self.f_input.grid(row=1, column=0)
-        self.e_filename.grid(row=0, column=0)
-        self.b_select_file.grid(row=0, column=1)
-        self.b_run.grid(row=1, column=0, columnspan=2)
+        self.e_filename.grid(row=0, column=0, columnspan=2)
+        self.b_select_file.grid(row=0, column=2, sticky=tkinter.W, padx=15)
+        self.cb_new_year_same_lineup.grid(row=1, column=0, sticky=tkinter.W)
+        self.b_run.grid(row=1, column=3)
 
         # output frame
         self.f_output.grid(row=2, column=0)
@@ -107,7 +134,8 @@ class Hmi:
         Method to open a file dialog and validate the file type.
         """
         # Select file dialog.
-        file = filedialog.askopenfilename(title=self.lang["dialog_select_file"], initialdir=os.curdir,
+        file = filedialog.askopenfilename(title=self.lang["dialog_select_file"],
+                                          initialdir=os.curdir,
                                           filetypes=self.list_supported_file_types)
         # populate String-var and entry.
         self.sv_filename.set(file)
@@ -154,7 +182,6 @@ class Hmi:
                 for line in f:
                     # Ignore blank lines
                     if line.strip():
-                        print(len(line))
                         self.list_participants.append(line)
 
         # If it is a xlsx file check column A for participants.
@@ -429,11 +456,43 @@ class Hmi:
         self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups*2]
         self.groups_desert = self.list_sorted_participants[self.num_groups*2:self.num_groups*3]
 
+    def get_previous_lineup(self):
+        """
+        Get the list of previous participants.
+        :return Bool, ok to continue program or not
+        """
+        if self.file_type != ".xlsx":
+            # Todo, translate this
+            messagebox.showerror("Unsupported file type", "only excel files supports previous particimants")
+            # Todo do not continue
+            return False
+        else:
+            file = os.path.join(self.file_path, self.file_name)
+
+            wb = openpyxl.load_workbook(file)
+            ws = wb.get_sheet_by_name(wb.sheetnames[0])
+            max_rows = ws.max_row
+            for row in ws["A1:A{}".format(max_rows)]:
+                for cell in row:
+                    if cell.value is not None:
+                        # Todo check for headlines.
+                        # Todo check for participants.
+                        pass
+
     def generate_result(self):
         """
         Start the process of generating the results.
         """
-        self.read_file_contents()
+        # See if previous line up should be taken into account.
+        if self.iv_new_year_same_lineup.get():
+            if not self.get_previous_lineup():
+                # Unsupported file or faulty data. No need to continue.
+                return
+        else:
+            # Just read the new file contents.
+            self.read_file_contents()
+
+
         try:
             self.validate_number_of_participants()
         except ValueError as e:
