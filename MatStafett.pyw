@@ -476,7 +476,7 @@ class Hmi:
                 for cell in row:
                     if cell.value is not None:
                         # Todo check for headlines.
-                        # Todo check for participants.
+                        # Todo check for participants
                         pass
 
     def generate_result(self):
