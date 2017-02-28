@@ -112,6 +112,8 @@ class Hmi:
         self.t_output.configure(yscrollcommand=self.scroll_y_output.set, xscrollcommand=self.scroll_x_output.set)
 
         # Check openpyxl version
+        # ======================
+        # TODO, translate this.
         if openpyxl.__version__ != OPENPYXL_VERSION:
             tkinter.messagebox.showwarning("Unexpected version difference",
                                            "This program uses openpyxl version: {} \nopenpyxl version installed: {}"
@@ -410,7 +412,7 @@ class Hmi:
                 ws["E{}".format(row)] = self.guest_d_2[index]
                 row += 1
 
-            # Save!
+            # Save! (also closes the file)
             try:
                 wb.save(filename=file)
             except PermissionError:
@@ -464,7 +466,7 @@ class Hmi:
         self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups*2]
         self.groups_desert = self.list_sorted_participants[self.num_groups*2:self.num_groups*3]
 
-    def get_previous_lineup(self):
+    def get_previous_lineup(self, filename="lang.csv"):
         """
         Get the list of previous participants.
         :return Bool, ok to continue program or not
@@ -476,13 +478,20 @@ class Hmi:
             return False
         else:
             file = os.path.join(self.file_path, self.file_name)
-
+            # TODO get header strings needed to search the excel file.
+            # get some phrases we need in all possible languages.
+            # with open(filename, "r", encoding="utf8") as csv_file:
+            #     reader = csv.DictReader(csv_file, delimiter=",")
+            #     for row in reader:
+            #         cur_lang[row["phrase"]] = row[language]
+            # # Open the excel file
             wb = openpyxl.load_workbook(file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
             for row in ws["A1:A{}".format(max_rows)]:
                 for cell in row:
                     if cell.value is not None:
+
                         # Todo check for headlines.
                         # Todo check for participants
                         pass
@@ -499,7 +508,6 @@ class Hmi:
         else:
             # Just read the new file contents.
             self.read_file_contents()
-
 
         try:
             self.validate_number_of_participants()
