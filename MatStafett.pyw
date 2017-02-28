@@ -466,26 +466,37 @@ class Hmi:
         self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups*2]
         self.groups_desert = self.list_sorted_participants[self.num_groups*2:self.num_groups*3]
 
-    def get_previous_lineup(self, filename="lang.csv"):
+    def get_previous_lineup(self, csv_filename="lang.csv"):
         """
         Get the list of previous participants.
         :return Bool, ok to continue program or not
         """
         if self.file_type != ".xlsx":
             # Todo, translate this
-            messagebox.showerror("Unsupported file type", "only excel files supports previous particimants")
+            messagebox.showerror("Unsupported file type", "only excel files supports previous participants")
             # Todo do not continue
             return False
         else:
-            file = os.path.join(self.file_path, self.file_name)
+            # save the excel file path
+            excel_file = os.path.join(self.file_path, self.file_name)
+            lang_str = []
             # TODO get header strings needed to search the excel file.
             # get some phrases we need in all possible languages.
-            # with open(filename, "r", encoding="utf8") as csv_file:
-            #     reader = csv.DictReader(csv_file, delimiter=",")
-            #     for row in reader:
-            #         cur_lang[row["phrase"]] = row[language]
-            # # Open the excel file
-            wb = openpyxl.load_workbook(file)
+            with open(csv_filename, "r", encoding="utf8") as csv_file:
+                reader = csv.DictReader(csv_file, delimiter=",")
+                # get all available languages.
+                # first get all headers.
+                languages = []
+                for header in reader.fieldnames:
+                    languages.append(header)
+                # then remove the first header, it is not a language
+                languages.pop(0)
+                for row in reader:
+                    # Todo loop through the available languages aswell.
+                    if row["phrase"] == "host":
+                        print(row["eng"])
+            # Open the excel file
+            wb = openpyxl.load_workbook(excel_file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
             for row in ws["A1:A{}".format(max_rows)]:
@@ -532,16 +543,16 @@ class Hmi:
         self.t_output.insert(tkinter.END, text, color)
         self.t_output.configure(state=tkinter.DISABLED)
 
-    def get_lang(self, language="eng", filename="lang.csv"):
+    def get_lang(self, language="eng", csv_filename="lang.csv"):
         """
         Read a csv file and return the phrases matching the selected language
         :param language: the language to use
-        :param filename: the csv file to open
+        :param csv_filename: the csv file to open
         :return: a tuple with phrases in selected language
         """
         cur_lang = {}
         try:
-            with open(filename, "r", encoding="utf8") as csv_file:
+            with open(csv_filename, "r", encoding="utf8") as csv_file:
                 reader = csv.DictReader(csv_file, delimiter=",")
                 for row in reader:
                     cur_lang[row["phrase"]] = row[language]
