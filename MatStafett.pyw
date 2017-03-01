@@ -437,13 +437,19 @@ class Hmi:
         And at least 9
         Raises ValueError if not.
         """
-        if len(self.list_participants) < 9:
+        # Get all the participants:
+        if self.iv_new_year_same_lineup.get():
+            list_participants = self.prev_starter_hosts + self.prev_main_hosts + self.prev_desert_hosts
+        else:
+            list_participants = self.list_participants
+        # Verify that it is an ok number of participants
+        if len(list_participants) < 9:
             raise ValueError(self.lang["error_less_than_nine"])
-        elif len(self.list_participants) % 3 != 0:
+        elif len(list_participants) % 3 != 0:
             raise ValueError(self.lang["error_number_participants"])
         else:
-            self.num_groups = int(len(self.list_participants) / 3)
-            self.log_output("{}: {}".format(self.lang["progress_found_participants"], len(self.list_participants)))
+            self.num_groups = int(len(list_participants) / 3)
+            self.log_output("{}: {}".format(self.lang["progress_found_participants"], len(list_participants)))
 
     def generate_random_index(self):
         self.log_output(self.lang["progress_gen_rand_list"])
@@ -464,7 +470,7 @@ class Hmi:
             self.list_sorted_participants.append(self.list_participants[index-1])
 
         # create three equal sized lists containing all participants
-
+        # ==========================================================
         self.groups_starter = self.list_sorted_participants[0:self.num_groups]
         self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups*2]
         self.groups_desert = self.list_sorted_participants[self.num_groups*2:self.num_groups*3]
@@ -539,15 +545,16 @@ class Hmi:
         else:
             # Just read the new file contents.
             self.read_file_contents()
-        # Todo continue if we have self.prev_starter_hosts, self.prev_main_hosts, self.prev_desert_hosts
         try:
             self.validate_number_of_participants()
         except ValueError as e:
             self.log_output("{}: {}".format(self.lang["error"], e))
             return
-        self.generate_random_index()
-        self.sort_participants()
-        self.create_lineup()
+        # See if previous line up should be taken into account.
+        if not self.iv_new_year_same_lineup.get():
+            self.generate_random_index()
+            self.sort_participants()
+        self.create_lineup()  # Todo this needs to be fixed for new_year_same_lineup
 
         self.log_output(self.lang["progress_done_saving"])
         self.save_to_file()
