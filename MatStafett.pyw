@@ -11,7 +11,7 @@ Description:    Select an Excel (.xlsx) or notepad (.txt) document.
                     * Save the result in the same file type as was submitted to the script (this can be changed)
 
 Non standard Dependencies:
-                * openpyxl 2.4.0
+                * openpyxl verified to work on versions: 2.4.0 - 2.4.6
 
 """
 
@@ -25,7 +25,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from openpyxl.styles import *
 
-OPENPYXL_VERSION = "2.4.0"
+OPENPYXL_VERSION = "2.4"
 
 
 class Hmi:
@@ -114,7 +114,7 @@ class Hmi:
         # Check openpyxl version
         # ======================
         # TODO, translate this.
-        if openpyxl.__version__ != OPENPYXL_VERSION:
+        if not openpyxl.__version__.startswith(OPENPYXL_VERSION):
             tkinter.messagebox.showwarning("Unexpected version difference",
                                            "This program uses openpyxl version: {} \nopenpyxl version installed: {}"
                                            .format(OPENPYXL_VERSION, openpyxl.__version__))
