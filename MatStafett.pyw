@@ -58,6 +58,9 @@ class Hmi:
         self.guest_m_2 = []
         self.guest_d_1 = []
         self.guest_d_2 = []
+        self.prev_starter_hosts = []
+        self.prev_main_hosts = []
+        self.prev_desert_hosts = []
 
         # Get language pack
         # =================
@@ -474,38 +477,54 @@ class Hmi:
         if self.file_type != ".xlsx":
             # Todo, translate this
             messagebox.showerror("Unsupported file type", "only excel files supports previous participants")
-            # Todo do not continue
             return False
         else:
+            languages = []
+            host = []
+            self.prev_starter_hosts = []
+            self.prev_main_hosts = []
+            self.prev_desert_hosts = []
+            get_participants = [False, "starter", "main", "desert"]  # which type of participants to get.
+            p_get_participants = 0  # pointer to get_participants
             # save the excel file path
             excel_file = os.path.join(self.file_path, self.file_name)
-            lang_str = []
-            # TODO get header strings needed to search the excel file.
+
             # get some phrases we need in all possible languages.
+            # ===================================================
             with open(csv_filename, "r", encoding="utf8") as csv_file:
                 reader = csv.DictReader(csv_file, delimiter=",")
                 # get all available languages.
                 # first get all headers.
-                languages = []
                 for header in reader.fieldnames:
                     languages.append(header)
                 # then remove the first header, it is not a language
                 languages.pop(0)
                 for row in reader:
-                    # Todo loop through the available languages aswell.
                     if row["phrase"] == "host":
-                        print(row["eng"])
-            # Open the excel file
+                        for language in languages:
+                            # add a space after the text to reduce the risk of the string being a part of a name
+                            host.append("{} ".format(row[language]))
+
+            # Open the excel file and search for participants
+            # ===============================================
             wb = openpyxl.load_workbook(excel_file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
             for row in ws["A1:A{}".format(max_rows)]:
                 for cell in row:
                     if cell.value is not None:
-
-                        # Todo check for headlines.
-                        # Todo check for participants
-                        pass
+                        # check for headlines
+                        if cell.value == "":  # skip blank lines.
+                            pass
+                        elif any(word in cell.value for word in host):
+                            p_get_participants += 1  # increase the pointer
+                        elif get_participants[p_get_participants] == "starter":
+                            self.prev_starter_hosts.append(cell.value)
+                        elif get_participants[p_get_participants] == "main":
+                            self.prev_main_hosts.append(cell.value)
+                        elif get_participants[p_get_participants] == "desert":
+                            self.prev_desert_hosts.append(cell.value)
+            return True
 
     def generate_result(self):
         """
@@ -514,12 +533,13 @@ class Hmi:
         # See if previous line up should be taken into account.
         if self.iv_new_year_same_lineup.get():
             if not self.get_previous_lineup():
-                # Unsupported file or faulty data. No need to continue.
+                # Todo, translate this
+                self.log_output("Unsupported file (needs to be .xlsx) or faulty data.", "red")
                 return
         else:
             # Just read the new file contents.
             self.read_file_contents()
-
+        # Todo continue if we have self.prev_starter_hosts, self.prev_main_hosts, self.prev_desert_hosts
         try:
             self.validate_number_of_participants()
         except ValueError as e:
