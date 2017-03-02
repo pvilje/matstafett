@@ -669,6 +669,9 @@ class Hmi:
             quit()
         self.lang = cur_lang
 
+        # ============
+        # END OF CLASS
+        # ============
 
 if __name__ == "__main__":
     root = tkinter.Tk()
