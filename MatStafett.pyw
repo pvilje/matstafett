@@ -25,18 +25,23 @@ from tkinter import filedialog
 from tkinter import messagebox
 from openpyxl.styles import *
 
+# Constants
+# =========
 OPENPYXL_VERSION = "2.4"
 
 
 class Hmi:
-
-    def __init__(self, parent, language="eng"):
+    def __init__(self, parent, language="eng", csv_file="lang.csv"):
         """
         Initialize the class
         :param parent: The master tk window
+        :param language: the GUI language, defaults to english.
+        :param csv_file: The csv file containing the language strings
         """
-        # variables
-        # ==========
+        # Set up variables
+        # ================
+        self.gui_language = ""
+        self.csv_file = ""
         self.file_type = ""
         self.file_name = None
         self.file_path = None
@@ -64,7 +69,18 @@ class Hmi:
 
         # Get language pack
         # =================
-        self.get_lang(language=language)
+        # Make sure it is a csv file. Allow different formats, but show a warning that it seems erroneous
+        if not csv_file.lower().endswith(".csv"):
+            if not messagebox.askyesno("Invalid language file",
+                                       "Invalid File format for language file, expected '.csv', got .{}\n\n"
+                                       "Do you want to try to use the supplied file anyway?\n"
+                                       "({})".format(
+                                           csv_file.lower().split(".")[-1], csv_file)):
+                quit()
+        # All is fine, get the phrases for the selected language
+        self.csv_file = csv_file
+        self.gui_language = language
+        self.get_lang()
         parent.title(self.lang["title"])
 
         # ================
@@ -76,12 +92,12 @@ class Hmi:
         self.l_title = tkinter.Label(parent, text=self.lang["title"])
         self.f_input = tkinter.Frame(parent, pady=10, padx=10)
         self.f_output = tkinter.Frame(parent, pady=10, padx=10)
-        
+
         # TK Variables
         # ============
         self.sv_filename = tkinter.StringVar()
         self.iv_new_year_same_lineup = tkinter.IntVar()
-        
+
         # Input widgets
         # =============
         self.e_filename = tkinter.Entry(self.f_input,
@@ -154,22 +170,24 @@ class Hmi:
         self.sv_filename.set(file)
         self.e_filename = self.sv_filename.get()
 
-        # Validate file, assume success
-        file_ok = True
+        # Validate file
+        # =============
+        file_type_ok = False
         if len(file) > 0:
             if file.endswith(".txt"):
                 self.file_type = ".txt"
+                file_type_ok = True
             elif file.endswith(".xlsx"):
                 self.file_type = ".xlsx"
+                file_type_ok = True
             else:
-                file_ok = False
                 self.log_output(self.lang["error_file_types"], "red")
         else:
-            file_ok = False
             self.log_output(self.lang["error_no_file_selected"], "red")
 
         # Activate / deactivate run-button depending on file validation result
-        if file_ok:
+        # ====================================================================
+        if file_type_ok:
             self.b_run.configure(state=tkinter.ACTIVE)
             self.file_path, self.file_name = os.path.split(file)
             self.log_output("{}: {}".format(self.lang["file_selected"], file))
@@ -190,6 +208,7 @@ class Hmi:
         self.log_output(self.lang["file_reading_{}".format(self.file_type)])
 
         # If it is a txt file, just loop through all the lines, assume every line is a participant
+        # ========================================================================================
         if self.file_type == ".txt":
             with open(file, "r") as f:
                 for line in f:
@@ -198,6 +217,7 @@ class Hmi:
                         self.list_participants.append(line)
 
         # If it is a xlsx file check column A for participants.
+        # =====================================================
         elif self.file_type == ".xlsx":
             wb = openpyxl.load_workbook(file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
@@ -207,13 +227,15 @@ class Hmi:
                     if cell.value is not None:
                         self.list_participants.append(cell.value)
         else:
+            # Should not be possible to end up here, but just in case...
             self.log_output(self.lang["error_file_types"], "red")
 
     def create_lineup(self):
         """
         Create a lineup for the food rally.
         """
-        # Generate lineup
+        # Reset variables
+        # ===============
         base_index = 0
         offset_1 = 1
         offset_2 = 2
@@ -227,7 +249,8 @@ class Hmi:
         self.guest_d_1 = []
         self.guest_d_2 = []
 
-        # loop through all groups, using three indexes for the group arrays
+        # loop through all groups, using three indexes for the group lists
+        # =================================================================
         while base_index < self.num_groups:
             if offset_1 >= self.num_groups:
                 offset_1 = 0
@@ -257,6 +280,9 @@ class Hmi:
         Save the generated list to a file, Grouped and neatly ordered
         """
         self.log_output(self.lang["progress_gen_route"])
+
+        # Save a .txt file
+        # ================
         if self.file_type == ".txt":
 
             # Create a new file since we don't want to mess with the source.
@@ -284,11 +310,13 @@ class Hmi:
 
             self.log_output("{} \n{}".format(self.lang["progress_saved_to"], filename))
 
+        # Save a .xlsx file
+        # =================
         elif self.file_type == ".xlsx":
             # Save to a new file, don't mess with the source.
             # check if this is the first generated result
             if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))):
-                # generate a new filename (add a number)
+                # File already existed, generate a new filename (add a number until a not used name is found)
                 file_no = 2
                 while os.path.isfile(
                         os.path.join(
@@ -296,15 +324,17 @@ class Hmi:
                     file_no += 1
                 file = os.path.join(
                     self.file_path, "{}_{}_{}".format(self.lang["result"], str(file_no), self.file_name))
-
             else:
+                # This is the first generated result.
                 file = os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))
 
-            # Open workbook
+            # Open Excel workbook
             wb = openpyxl.Workbook()
             ws = wb.active
             ws.title = self.lang["title"]
+
             # Setup styles
+            # ============
             ws.column_dimensions["A"].width = 34
             ws.column_dimensions["C"].width = 34
             ws.column_dimensions["D"].width = 34
@@ -428,34 +458,51 @@ class Hmi:
                 messagebox.showinfo(self.lang["progress_done"], "{}: {}".format(self.lang["dialog_done_msg"], file))
 
         else:
-            pass
-            # should not be possible to be here
+            # Should not be possible to end up here, but just in case...
+            self.log_output(self.lang["error_file_types"], "red")
 
     def validate_number_of_participants(self):
         """
-        Makes sure the number of participants is a factor of 3.
-        And at least 9
+        Makes sure the number of participants is:
+            * a factor of 3.
+            * at least 9
         Raises ValueError if not.
         """
         # Get all the participants:
+        # =========================
+        # Is this based on a previous result or not?
         if self.iv_new_year_same_lineup.get():
             list_participants = self.prev_starter_hosts + self.prev_main_hosts + self.prev_desert_hosts
+            # Make sure the three groups are equal in size
+            if not (len(self.prev_starter_hosts) == len(self.prev_main_hosts) and
+                    len(self.prev_main_hosts) == len(self.prev_desert_hosts)):
+                # Todo: Translate this.
+                raise ValueError("The previous starter,main and desert hosts are not distributed equally")
         else:
             list_participants = self.list_participants
+
         # Verify that it is an ok number of participants
+        # ==============================================
         if len(list_participants) < 9:
+            # Must be 9 or more
             raise ValueError(self.lang["error_less_than_nine"])
         elif len(list_participants) % 3 != 0:
+            # Must be a factor of 3
             raise ValueError(self.lang["error_number_participants"])
         else:
+            # All is ok, go on.
             self.num_groups = int(len(list_participants) / 3)
             self.log_output("{}: {}".format(self.lang["progress_found_participants"], len(list_participants)))
 
     def generate_random_index(self):
+        """
+        Generate a list containing integers from 1 - amount of participants.
+        Then shuffle it around so they don't all come in order...
+        """
         self.log_output(self.lang["progress_gen_rand_list"])
-        i = 1
+        i = 0
         self.list_rand_index = []
-        while i <= len(self.list_participants):
+        while i < len(self.list_participants):
             self.list_rand_index.append(i)
             i += 1
         random.shuffle(self.list_rand_index)
@@ -467,24 +514,27 @@ class Hmi:
         self.log_output(self.lang["progress_sort_unsort"])
         self.list_sorted_participants = []
         for index in self.list_rand_index:
-            self.list_sorted_participants.append(self.list_participants[index-1])
+            self.list_sorted_participants.append(self.list_participants[index])
 
         # create three equal sized lists containing all participants
         # ==========================================================
         self.groups_starter = self.list_sorted_participants[0:self.num_groups]
-        self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups*2]
-        self.groups_desert = self.list_sorted_participants[self.num_groups*2:self.num_groups*3]
+        self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups * 2]
+        self.groups_desert = self.list_sorted_participants[self.num_groups * 2:self.num_groups * 3]
 
-    def get_previous_lineup(self, csv_filename="lang.csv"):
+    def get_previous_lineup(self):
         """
         Get the list of previous participants.
         :return Bool, ok to continue program or not
         """
+        # This will only work for excel files.
         if self.file_type != ".xlsx":
             # Todo, translate this
             messagebox.showerror("Unsupported file type", "only excel files supports previous participants")
             return False
         else:
+            # Reset needed variables
+            # ======================
             languages = []
             host = []
             self.prev_starter_hosts = []
@@ -492,19 +542,21 @@ class Hmi:
             self.prev_desert_hosts = []
             get_participants = [False, "starter", "main", "desert"]  # which type of participants to get.
             p_get_participants = 0  # pointer to get_participants
-            # save the excel file path
-            excel_file = os.path.join(self.file_path, self.file_name)
+            excel_file = os.path.join(self.file_path, self.file_name)  # save the excel file path
 
             # get some phrases we need in all possible languages.
             # ===================================================
-            with open(csv_filename, "r", encoding="utf8") as csv_file:
+            with open(self.csv_file, "r", encoding="utf8") as csv_file:
                 reader = csv.DictReader(csv_file, delimiter=",")
+
                 # get all available languages.
+                # ===========================
                 # first get all headers.
                 for header in reader.fieldnames:
                     languages.append(header)
                 # then remove the first header, it is not a language
                 languages.pop(0)
+                # Now get the "host" phrase in all known/supported languages.
                 for row in reader:
                     if row["phrase"] == "host":
                         for language in languages:
@@ -519,17 +571,22 @@ class Hmi:
             for row in ws["A1:A{}".format(max_rows)]:
                 for cell in row:
                     if cell.value is not None:
-                        # check for headlines
-                        if cell.value == "":  # skip blank lines.
+                        # skip blank lines.
+                        if cell.value == "":
                             pass
+                        # Check for headlines
                         elif any(word in cell.value for word in host):
                             p_get_participants += 1  # increase the pointer
+                        # Add the previous starters hosts
                         elif get_participants[p_get_participants] == "starter":
                             self.prev_starter_hosts.append(cell.value)
+                        # Add the previous main course hosts
                         elif get_participants[p_get_participants] == "main":
                             self.prev_main_hosts.append(cell.value)
+                        # Add the previous desert hosts
                         elif get_participants[p_get_participants] == "desert":
                             self.prev_desert_hosts.append(cell.value)
+            # Success!
             return True
 
     def generate_result(self):
@@ -538,6 +595,7 @@ class Hmi:
         """
         # See if previous line up should be taken into account.
         if self.iv_new_year_same_lineup.get():
+            # Try to get the previous participants.
             if not self.get_previous_lineup():
                 # Todo, translate this
                 self.log_output("Unsupported file (needs to be .xlsx) or faulty data.", "red")
@@ -550,13 +608,18 @@ class Hmi:
         except ValueError as e:
             self.log_output("{}: {}".format(self.lang["error"], e))
             return
-        # See if previous line up should be taken into account.
+
+        # Only create new groups of participants if previous line up not should be taken into account.
         if not self.iv_new_year_same_lineup.get():
             self.generate_random_index()
             self.sort_participants()
+
+        # Generate a new lineup.
         self.create_lineup()  # Todo this needs to be fixed for new_year_same_lineup
 
         self.log_output(self.lang["progress_done_saving"])
+
+        # Save the result
         self.save_to_file()
 
     def log_output(self, text, color="black"):
@@ -566,29 +629,31 @@ class Hmi:
         :param color: Text color
         """
         self.t_output.configure(state=tkinter.NORMAL)
-        text += "\n"
+        if not text.endswith("\n"):
+            text += "\n"
         self.t_output.insert(tkinter.END, text, color)
         self.t_output.configure(state=tkinter.DISABLED)
 
-    def get_lang(self, language="eng", csv_filename="lang.csv"):
+    def get_lang(self):
         """
         Read a csv file and return the phrases matching the selected language
-        :param language: the language to use
-        :param csv_filename: the csv file to open
-        :return: a tuple with phrases in selected language
+        self.lang is set to a dict with phrases in selected language
         """
         cur_lang = {}
         try:
-            with open(csv_filename, "r", encoding="utf8") as csv_file:
+            with open(self.csv_file, "r", encoding="utf8") as csv_file:
                 reader = csv.DictReader(csv_file, delimiter=",")
                 for row in reader:
-                    cur_lang[row["phrase"]] = row[language]
+                    cur_lang[row["phrase"]] = row[self.gui_language]
         except KeyError:
             pass
         except FileNotFoundError:
-            pass
+            messagebox.showerror("File not found", "The language file: '{}' can not be found.\n"
+                                 "Make sure it is available and try again.".format(self.csv_file))
+            quit()
         self.lang = cur_lang
 
+    # TODO get_str is never used, should it be removed?
     def get_str(self, phrase):
         """
         Try to read a phrase from the language dictionary
@@ -602,6 +667,7 @@ class Hmi:
         except KeyError:
             string = "Invalid phrase to print: {}".format(phrase)
             return string
+
 
 if __name__ == "__main__":
     root = tkinter.Tk()
