@@ -70,6 +70,7 @@ class Hmi:
         # Get language pack
         # =================
         # Make sure it is a csv file. Allow different formats, but show a warning that it seems erroneous
+        # This can not be translated since the language file obviously does not work.
         if not csv_file.lower().endswith(".csv"):
             if not messagebox.askyesno("Invalid language file",
                                        "Invalid File format for language file, expected '.csv', got .{}\n\n"
@@ -132,10 +133,9 @@ class Hmi:
 
         # Check openpyxl version
         # ======================
-        # TODO, translate this.
         if not openpyxl.__version__.startswith(OPENPYXL_VERSION):
-            tkinter.messagebox.showwarning("Unexpected version difference",
-                                           "This program uses openpyxl version: {} \nopenpyxl version installed: {}"
+            tkinter.messagebox.showwarning(self.lang["warning_unexpected_version_title"],
+                                           self.lang["warning_openpyxl_version"]
                                            .format(OPENPYXL_VERSION, openpyxl.__version__))
 
     def draw_main(self):
@@ -476,8 +476,7 @@ class Hmi:
             # Make sure the three groups are equal in size
             if not (len(self.prev_starter_hosts) == len(self.prev_main_hosts) and
                     len(self.prev_main_hosts) == len(self.prev_desert_hosts)):
-                # Todo: Translate this.
-                raise ValueError("The previous starter,main and desert hosts are not distributed equally")
+                raise ValueError(self.lang["valueerror_not_even_dist"])
         else:
             list_participants = self.list_participants
 
@@ -600,19 +599,15 @@ class Hmi:
             # Try to get the previous participants.
             previous_line_up_read = self.get_previous_lineup()
             if previous_line_up_read == 0:
-                # Todo, translate this
-                self.log_output("Previous lineup read.")
+                self.log_output(self.lang["progress_prev_lineup_read"])
             elif previous_line_up_read == 1:
-                # Todo, translate this
-                self.log_output("Unsupported file (needs to be .xlsx).", "red")
+                self.log_output(self.lang["error_not_excel"], "red")
                 return
             elif previous_line_up_read == 2:
-                # Todo, translate this
-                self.log_output("Invalid data in excel file. Cannot complete a new lineup.", "red")
+                self.log_output(self.lang["error_excel_data_new_lineup"], "red")
                 return
             else:
-                # Todo, translate this
-                self.log_output("Unexpected error when reading the file, no idea what went wrong", "red")
+                self.log_output(self.lang["error_unexpected_read_file"], "red")
                 return
 
         else:
@@ -639,7 +634,6 @@ class Hmi:
             # Save the result
             self.save_to_file()
 
-
     def log_output(self, text, color="black"):
         """
         Method to print text to the output frame.
@@ -663,7 +657,7 @@ class Hmi:
             with open(self.csv_file, "r", encoding="utf8") as csv_file:
                 reader = csv.DictReader(csv_file, delimiter=",")
                 for row in reader:
-                    cur_lang[row["phrase"]] = row[self.gui_language]
+                    cur_lang[row["phrase"]] = row[self.gui_language].replace("\\n", "\n")
         except KeyError:
             pass
         except FileNotFoundError:
