@@ -525,13 +525,11 @@ class Hmi:
     def get_previous_lineup(self):
         """
         Get the list of previous participants.
-        :return Bool, ok to continue program or not
+        :return result: 0 - OK, 1 - Unsupported File, 2 - Faulty DataBool
         """
         # This will only work for excel files.
         if self.file_type != ".xlsx":
-            # Todo, translate this
-            messagebox.showerror("Unsupported file type", "only excel files supports previous participants")
-            return False
+            return 1
         else:
             # Reset needed variables
             # ======================
@@ -586,8 +584,12 @@ class Hmi:
                         # Add the previous desert hosts
                         elif get_participants[p_get_participants] == "desert":
                             self.prev_desert_hosts.append(cell.value)
+
+            # Quick check, if this has worked p_get_participants show now have reached max.
+            if not p_get_participants == len(get_participants) - 1:
+                return 2
             # Success!
-            return True
+            return 0
 
     def generate_result(self):
         """
@@ -596,17 +598,30 @@ class Hmi:
         # See if previous line up should be taken into account.
         if self.iv_new_year_same_lineup.get():
             # Try to get the previous participants.
-            if not self.get_previous_lineup():
+            previous_line_up_read = self.get_previous_lineup()
+            if previous_line_up_read == 0:
                 # Todo, translate this
-                self.log_output("Unsupported file (needs to be .xlsx) or faulty data.", "red")
+                self.log_output("Previous lineup read.")
+            elif previous_line_up_read == 1:
+                # Todo, translate this
+                self.log_output("Unsupported file (needs to be .xlsx).", "red")
                 return
+            elif previous_line_up_read == 2:
+                # Todo, translate this
+                self.log_output("Invalid data in excel file. Cannot complete a new lineup.", "red")
+                return
+            else:
+                # Todo, translate this
+                self.log_output("Unexpected error when reading the file, no idea what went wrong", "red")
+                return
+
         else:
             # Just read the new file contents.
             self.read_file_contents()
         try:
             self.validate_number_of_participants()
         except ValueError as e:
-            self.log_output("{}: {}".format(self.lang["error"], e))
+            self.log_output("{}: {}".format(self.lang["error"], e), "red")
             return
 
         # Only create new groups of participants if previous line up not should be taken into account.
@@ -632,6 +647,7 @@ class Hmi:
         if not text.endswith("\n"):
             text += "\n"
         self.t_output.insert(tkinter.END, text, color)
+        self.t_output.yview_moveto(1)
         self.t_output.configure(state=tkinter.DISABLED)
 
     def get_lang(self):
