@@ -669,21 +669,6 @@ class Hmi:
             quit()
         self.lang = cur_lang
 
-    # TODO get_str is never used, should it be removed?
-    def get_str(self, phrase):
-        """
-        Try to read a phrase from the language dictionary
-        Throw an exception if not ok
-        :param phrase: the wanted phrase
-        :return: The text to print
-        """
-        try:
-            string = self.lang[phrase]
-            return string
-        except KeyError:
-            string = "Invalid phrase to print: {}".format(phrase)
-            return string
-
 
 if __name__ == "__main__":
     root = tkinter.Tk()
