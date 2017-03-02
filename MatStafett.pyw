@@ -629,13 +629,16 @@ class Hmi:
             self.generate_random_index()
             self.sort_participants()
 
-        # Generate a new lineup.
-        self.create_lineup()  # Todo this needs to be fixed for new_year_same_lineup
+        # Todo this needs to be fixed for new_year_same_lineup
+        if not self.iv_new_year_same_lineup.get():
+            # Generate a new lineup.
+            self.create_lineup()
 
-        self.log_output(self.lang["progress_done_saving"])
+            self.log_output(self.lang["progress_done_saving"])
 
-        # Save the result
-        self.save_to_file()
+            # Save the result
+            self.save_to_file()
+
 
     def log_output(self, text, color="black"):
         """
