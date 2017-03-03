@@ -24,10 +24,23 @@ import csv
 from tkinter import filedialog
 from tkinter import messagebox
 from openpyxl.styles import *
+from collections import deque
 
 # Constants
 # =========
 OPENPYXL_VERSION = "2.4"
+
+
+def rotate(l, n):
+    """
+    Rotates list "l" "n" times.
+    :param l: the list to rotate
+    :param n: times to rotate
+    :return: a rotated list object
+    """
+    temp = deque(l)
+    temp.rotate(n)
+    return list(temp)
 
 
 class Hmi:
@@ -512,8 +525,20 @@ class Hmi:
         """
         self.log_output(self.lang["progress_sort_unsort"])
         self.list_sorted_participants = []
-        for index in self.list_rand_index:
-            self.list_sorted_participants.append(self.list_participants[index])
+
+        # Is this based on a previous result or not?
+        if self.iv_new_year_same_lineup.get():
+            # Rotate the lists,
+            self.prev_main_hosts = rotate(self.prev_main_hosts, 0)
+            self.prev_starter_hosts = rotate(self.prev_starter_hosts, 3)
+            self.prev_desert_hosts = rotate(self.prev_desert_hosts, 5)
+            # TODO figure this out,
+            self.list_sorted_participants += self.prev_main_hosts
+            self.list_sorted_participants += self.prev_desert_hosts
+            self.list_sorted_participants += self.prev_starter_hosts
+        else:
+            for index in self.list_rand_index:
+                self.list_sorted_participants.append(self.list_participants[index])
 
         # create three equal sized lists containing all participants
         # ==========================================================
@@ -622,17 +647,15 @@ class Hmi:
         # Only create new groups of participants if previous line up not should be taken into account.
         if not self.iv_new_year_same_lineup.get():
             self.generate_random_index()
-            self.sort_participants()
+        self.sort_participants()
 
-        # Todo this needs to be fixed for new_year_same_lineup
-        if not self.iv_new_year_same_lineup.get():
-            # Generate a new lineup.
-            self.create_lineup()
+        # Generate a new lineup.
+        self.create_lineup()
 
-            self.log_output(self.lang["progress_done_saving"])
+        self.log_output(self.lang["progress_done_saving"])
 
-            # Save the result
-            self.save_to_file()
+        # Save the result
+        self.save_to_file()
 
     def log_output(self, text, color="black"):
         """
