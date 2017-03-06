@@ -528,11 +528,11 @@ class Hmi:
 
         # Is this based on a previous result or not?
         if self.iv_new_year_same_lineup.get():
-            # Rotate the lists,
+            # Rotate the lists to make sure no one meets the same participants as last round.
             self.prev_main_hosts = rotate(self.prev_main_hosts, 0)
-            self.prev_starter_hosts = rotate(self.prev_starter_hosts, 3)
-            self.prev_desert_hosts = rotate(self.prev_desert_hosts, 5)
-            # TODO figure this out,
+            self.prev_desert_hosts = rotate(self.prev_desert_hosts, 4)
+            self.prev_starter_hosts = rotate(self.prev_starter_hosts, 8)
+            # Shift the hosts one step to make sure no one hosts the same part of the dinner as last time
             self.list_sorted_participants += self.prev_main_hosts
             self.list_sorted_participants += self.prev_desert_hosts
             self.list_sorted_participants += self.prev_starter_hosts
