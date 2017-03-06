@@ -243,10 +243,15 @@ class Hmi:
             wb = openpyxl.load_workbook(file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
-            for row in ws["A1:A{}".format(max_rows)]:
+            for number, row in enumerate(ws["A1:A{}".format(max_rows)]):
                 for cell in row:
                     if cell.value is not None:
-                        self.list_participants.append(cell.value)
+                        # address column
+                        address = ws["B{}".format(number)].value
+                        # allergies column
+                        allergies = ws["C{}".format(number)].value
+                        # [name, address, allergies]
+                        self.list_participants.append([cell.value, address, allergies])
         else:
             # Should not be possible to end up here, but just in case...
             self.log_output(self.lang["error_file_types"], "red")
@@ -278,19 +283,19 @@ class Hmi:
             if offset_2 >= self.num_groups:
                 offset_2 = 0
             # starters
-            self.host_s.append(self.groups_starter[base_index])
-            self.guest_s_1.append(self.groups_main[base_index])
-            self.guest_s_2.append(self.groups_desert[base_index])
+            self.host_s.append(self.groups_starter[base_index][0])
+            self.guest_s_1.append(self.groups_main[base_index][0])
+            self.guest_s_2.append(self.groups_desert[base_index][0])
 
             # main course
-            self.host_m.append(self.groups_main[offset_1])
-            self.guest_m_1.append(self.groups_starter[base_index])
-            self.guest_m_2.append(self.groups_desert[offset_2])
+            self.host_m.append(self.groups_main[offset_1][0])
+            self.guest_m_1.append(self.groups_starter[base_index][0])
+            self.guest_m_2.append(self.groups_desert[offset_2][0])
 
             # desert
-            self.host_d.append(self.groups_desert[offset_1])
-            self.guest_d_1.append(self.groups_starter[base_index])
-            self.guest_d_2.append(self.groups_main[offset_2])
+            self.host_d.append(self.groups_desert[offset_1][0])
+            self.guest_d_1.append(self.groups_starter[base_index][0])
+            self.guest_d_2.append(self.groups_main[offset_2][0])
 
             base_index += 1
             offset_1 += 1
@@ -313,19 +318,19 @@ class Hmi:
             with open(os.path.join(self.file_path, filename), "w", encoding="utf8") as f:
                 f.write("{}\n".format(self.lang["excel_starter"]))
                 for index, host in enumerate(self.host_s):
-                    f.write("{}: {}".format(self.lang["host"], host))
+                    f.write("{}: {}".format(self.lang["excel_host"], host))
                     f.write("{}: {}".format(self.lang["excel_guest"], self.guest_s_1[index]))
                     f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_s_2[index]))
 
                 f.write("{}\n".format(self.lang["excel_main_course"]))
                 for index, host in enumerate(self.host_m):
-                    f.write("{}: {}".format(self.lang["host"], host))
+                    f.write("{}: {}".format(self.lang["excel_host"], host))
                     f.write("{}: {}".format(self.lang["excel_guest"], self.guest_m_1[index]))
                     f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_m_2[index]))
 
                 f.write("{}\n".format(self.lang["excel_desert"]))
                 for index, host in enumerate(self.host_d):
-                    f.write("{}: {}".format(self.lang["host"], host))
+                    f.write("{}: {}".format(self.lang["excel_host"], host))
                     f.write("{}: {}".format(self.lang["excel_guest"], self.guest_d_1[index]))
                     f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_d_2[index]))
 
@@ -336,12 +341,14 @@ class Hmi:
         elif self.file_type == ".xlsx":
             # Save to a new file, don't mess with the source.
             # check if this is the first generated result
-            if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["file_name_result"], self.file_name))):
+            if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["file_name_result"],
+                                                                          self.file_name))):
                 # File already existed, generate a new filename (add a number until a not used name is found)
                 file_no = 2
                 while os.path.isfile(
                         os.path.join(
-                            self.file_path, "{}_{}_{}".format(self.lang["file_name_result"], str(file_no), self.file_name))):
+                            self.file_path, "{}_{}_{}".format(self.lang["file_name_result"], str(file_no),
+                                                              self.file_name))):
                     file_no += 1
                 file = os.path.join(
                     self.file_path, "{}_{}_{}".format(self.lang["file_name_result"], str(file_no), self.file_name))
@@ -350,9 +357,10 @@ class Hmi:
                 file = os.path.join(self.file_path, "{}_{}".format(self.lang["file_name_result"], self.file_name))
 
             # Open Excel workbook
+            # ===================
             wb = openpyxl.Workbook()
             ws = wb.active
-            ws.title = self.lang["excel_title"]
+            ws.title = self.lang["excel_sheet_name_one"]
 
             # Setup styles
             # ============
@@ -362,23 +370,26 @@ class Hmi:
             ws.column_dimensions["E"].width = 34
             h1 = NamedStyle(name="h1", font=Font(size=15, bold=True, color="1f497d"),
                             border=Border(bottom=Side(style="thick", color="4f81bd")))
-            h1_center = NamedStyle(name="h1_center", font=Font(size=15, bold=True, color="1f497d"),
+            h1_center = NamedStyle(name="h1_center",
+                                   font=Font(size=15, bold=True, color="1f497d"),
                                    border=Border(bottom=Side(style="thick", color="4f81bd")),
                                    alignment=Alignment(horizontal="center"))
             h2 = NamedStyle(name="h2", font=Font(size=13, bold=True, color="1f497d"),
                             border=Border(bottom=Side(style="thick", color="a7bfde")))
-            h2_center = NamedStyle(name="h2_center", font=Font(size=13, bold=True, color="1f497d"),
+            h2_center = NamedStyle(name="h2_center",
+                                   font=Font(size=13, bold=True, color="1f497d"),
                                    border=Border(bottom=Side(style="thick", color="a7bfde")),
                                    alignment=Alignment(horizontal="center"))
+
             # Column A, summary of participants
             # =================================
 
             # Summary header
-            ws["A1"] = "{}".format(self.lang["summary"])
+            ws["A1"] = "{}".format(self.lang["excel_summary"])
             ws["A1"].style = h1
 
             # Starter hosts
-            ws["A2"] = "{} {}:".format(self.lang["host"], self.lang["excel_starter"])
+            ws["A2"] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_starter"])
             ws["A2"].style = h2
             row = 3
             for name in self.host_s:
@@ -387,7 +398,7 @@ class Hmi:
             row += 2
 
             # Main course hosts
-            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["excel_main_course"])
+            ws["A{}".format(row)] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_main_course"])
             ws["A{}".format(row)].style = h2
             row += 1
             for name in self.host_m:
@@ -396,7 +407,7 @@ class Hmi:
             row += 2
 
             # Desert hosts
-            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["excel_desert"])
+            ws["A{}".format(row)] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_desert"])
             ws["A{}".format(row)].style = h2
             row += 1
             for name in self.host_d:
@@ -411,7 +422,7 @@ class Hmi:
             ws["C1"].style = h1_center
             ws["D1"].style = h1_center  # needed for the border, even though the cells are merged
             ws["E1"].style = h1_center  # needed for the border, even though the cells are merged
-            ws["C2"] = self.lang["host"]
+            ws["C2"] = self.lang["excel_host"]
             ws["D2"] = self.lang["excel_guest"]
             ws["E2"] = self.lang["excel_guest"]
             ws["C2"].style = h2_center
@@ -432,7 +443,7 @@ class Hmi:
             ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
-            ws["C{}".format(row)] = self.lang["host"]
+            ws["C{}".format(row)] = self.lang["excel_host"]
             ws["D{}".format(row)] = self.lang["excel_guest"]
             ws["E{}".format(row)] = self.lang["excel_guest"]
             ws["C{}".format(row)].style = h2_center
@@ -453,7 +464,7 @@ class Hmi:
             ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
-            ws["C{}".format(row)] = self.lang["host"]
+            ws["C{}".format(row)] = self.lang["excel_host"]
             ws["D{}".format(row)] = self.lang["excel_guest"]
             ws["E{}".format(row)] = self.lang["excel_guest"]
             ws["C{}".format(row)].style = h2_center
@@ -465,6 +476,16 @@ class Hmi:
                 ws["D{}".format(row)] = self.guest_d_1[index]
                 ws["E{}".format(row)] = self.guest_d_2[index]
                 row += 1
+
+            # Sheet 2 list of participants
+            # ============================
+            ws2 = wb.create_sheet(self.lang["excel_sheet_name_two"])
+            for line_no, participant in enumerate(self.list_sorted_participants):
+                ws2["A{}".format(line_no + 1)] = participant[0]
+                if participant[1] is not None:
+                    ws2["B{}".format(line_no + 1)] = participant[1]
+                if participant[2] is not None:
+                    ws2["C{}".format(line_no + 1)] = participant[2]
 
             # Save! (also closes the file)
             try:
