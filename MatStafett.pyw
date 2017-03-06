@@ -95,7 +95,7 @@ class Hmi:
         self.csv_file = csv_file
         self.gui_language = language
         self.get_lang()
-        parent.title(self.lang["title"])
+        parent.title(self.lang["label_title"])
 
         # ================
         # tkinter stuff...
@@ -103,14 +103,16 @@ class Hmi:
 
         # Main frames and labels
         # ======================
-        self.l_title = tkinter.Label(parent, text=self.lang["title"])
+        self.l_title = tkinter.Label(parent, text=self.lang["label_title"])
         self.f_input = tkinter.Frame(parent, pady=10, padx=10)
         self.f_output = tkinter.Frame(parent, pady=10, padx=10)
+        self.l_options = tkinter.Label(self.f_input, text=self.lang["label_options"])
 
         # TK Variables
         # ============
         self.sv_filename = tkinter.StringVar()
         self.iv_new_year_same_lineup = tkinter.IntVar()
+        self.iv_generate_letters = tkinter.IntVar()  # Todo, not used yet
 
         # Input widgets
         # =============
@@ -128,6 +130,9 @@ class Hmi:
         self.cb_new_year_same_lineup = tkinter.Checkbutton(self.f_input,
                                                            text=self.lang["button_same_lineup"],
                                                            variable=self.iv_new_year_same_lineup)
+        self.cb_generate_letters = tkinter.Checkbutton(self.f_input,
+                                                       text=self.lang["button_generate_letters"],
+                                                       variable=self.iv_generate_letters)
 
         # Output widgets
         # ==============
@@ -160,10 +165,13 @@ class Hmi:
 
         # input frame
         self.f_input.grid(row=1, column=0)
+
         self.e_filename.grid(row=0, column=0, columnspan=2)
         self.b_select_file.grid(row=0, column=2, sticky=tkinter.W, padx=15)
-        self.cb_new_year_same_lineup.grid(row=1, column=0, sticky=tkinter.W)
-        self.b_run.grid(row=1, column=3)
+        self.l_options.grid(row=1, column=0, sticky=tkinter.W)
+        self.cb_new_year_same_lineup.grid(row=2, column=0, sticky=tkinter.W)
+        self.cb_generate_letters.grid(row=3, column=0, sticky=tkinter.W)
+        self.b_run.grid(row=4, column=2)
 
         # output frame
         self.f_output.grid(row=2, column=0)
@@ -303,23 +311,23 @@ class Hmi:
             # result = starter + main + desert
             # Open / create a new file and save the results.
             with open(os.path.join(self.file_path, filename), "w", encoding="utf8") as f:
-                f.write("{}\n".format(self.lang["starter"]))
+                f.write("{}\n".format(self.lang["excel_starter"]))
                 for index, host in enumerate(self.host_s):
                     f.write("{}: {}".format(self.lang["host"], host))
-                    f.write("{}: {}".format(self.lang["guest"], self.guest_s_1[index]))
-                    f.write("{}: {}\n".format(self.lang["guest"], self.guest_s_2[index]))
+                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_s_1[index]))
+                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_s_2[index]))
 
-                f.write("{}\n".format(self.lang["main_course"]))
+                f.write("{}\n".format(self.lang["excel_main_course"]))
                 for index, host in enumerate(self.host_m):
                     f.write("{}: {}".format(self.lang["host"], host))
-                    f.write("{}: {}".format(self.lang["guest"], self.guest_m_1[index]))
-                    f.write("{}: {}\n".format(self.lang["guest"], self.guest_m_2[index]))
+                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_m_1[index]))
+                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_m_2[index]))
 
-                f.write("{}\n".format(self.lang["desert"]))
+                f.write("{}\n".format(self.lang["excel_desert"]))
                 for index, host in enumerate(self.host_d):
                     f.write("{}: {}".format(self.lang["host"], host))
-                    f.write("{}: {}".format(self.lang["guest"], self.guest_d_1[index]))
-                    f.write("{}: {}\n".format(self.lang["guest"], self.guest_d_2[index]))
+                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_d_1[index]))
+                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_d_2[index]))
 
             self.log_output("{} \n{}".format(self.lang["progress_saved_to"], filename))
 
@@ -328,23 +336,23 @@ class Hmi:
         elif self.file_type == ".xlsx":
             # Save to a new file, don't mess with the source.
             # check if this is the first generated result
-            if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))):
+            if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["file_name_result"], self.file_name))):
                 # File already existed, generate a new filename (add a number until a not used name is found)
                 file_no = 2
                 while os.path.isfile(
                         os.path.join(
-                            self.file_path, "{}_{}_{}".format(self.lang["result"], str(file_no), self.file_name))):
+                            self.file_path, "{}_{}_{}".format(self.lang["file_name_result"], str(file_no), self.file_name))):
                     file_no += 1
                 file = os.path.join(
-                    self.file_path, "{}_{}_{}".format(self.lang["result"], str(file_no), self.file_name))
+                    self.file_path, "{}_{}_{}".format(self.lang["file_name_result"], str(file_no), self.file_name))
             else:
                 # This is the first generated result.
-                file = os.path.join(self.file_path, "{}_{}".format(self.lang["result"], self.file_name))
+                file = os.path.join(self.file_path, "{}_{}".format(self.lang["file_name_result"], self.file_name))
 
             # Open Excel workbook
             wb = openpyxl.Workbook()
             ws = wb.active
-            ws.title = self.lang["title"]
+            ws.title = self.lang["excel_title"]
 
             # Setup styles
             # ============
@@ -370,7 +378,7 @@ class Hmi:
             ws["A1"].style = h1
 
             # Starter hosts
-            ws["A2"] = "{} {}:".format(self.lang["host"], self.lang["starter"])
+            ws["A2"] = "{} {}:".format(self.lang["host"], self.lang["excel_starter"])
             ws["A2"].style = h2
             row = 3
             for name in self.host_s:
@@ -379,7 +387,7 @@ class Hmi:
             row += 2
 
             # Main course hosts
-            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["main_course"])
+            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["excel_main_course"])
             ws["A{}".format(row)].style = h2
             row += 1
             for name in self.host_m:
@@ -388,7 +396,7 @@ class Hmi:
             row += 2
 
             # Desert hosts
-            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["desert"])
+            ws["A{}".format(row)] = "{} {}:".format(self.lang["host"], self.lang["excel_desert"])
             ws["A{}".format(row)].style = h2
             row += 1
             for name in self.host_d:
@@ -399,13 +407,13 @@ class Hmi:
             # =================================
             # Starters
             ws.merge_cells("C1:E1")
-            ws["C1"] = self.lang["starter"]
+            ws["C1"] = self.lang["excel_starter"]
             ws["C1"].style = h1_center
             ws["D1"].style = h1_center  # needed for the border, even though the cells are merged
             ws["E1"].style = h1_center  # needed for the border, even though the cells are merged
             ws["C2"] = self.lang["host"]
-            ws["D2"] = self.lang["guest"]
-            ws["E2"] = self.lang["guest"]
+            ws["D2"] = self.lang["excel_guest"]
+            ws["E2"] = self.lang["excel_guest"]
             ws["C2"].style = h2_center
             ws["D2"].style = h2_center
             ws["E2"].style = h2_center
@@ -419,14 +427,14 @@ class Hmi:
             # Main Course
             row += 1
             ws.merge_cells("C{}:E{}".format(row, row))
-            ws["C{}".format(row)] = self.lang["main_course"]
+            ws["C{}".format(row)] = self.lang["excel_main_course"]
             ws["C{}".format(row)].style = h1_center
             ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
             ws["C{}".format(row)] = self.lang["host"]
-            ws["D{}".format(row)] = self.lang["guest"]
-            ws["E{}".format(row)] = self.lang["guest"]
+            ws["D{}".format(row)] = self.lang["excel_guest"]
+            ws["E{}".format(row)] = self.lang["excel_guest"]
             ws["C{}".format(row)].style = h2_center
             ws["D{}".format(row)].style = h2_center
             ws["E{}".format(row)].style = h2_center
@@ -440,14 +448,14 @@ class Hmi:
             # Desert
             row += 1
             ws.merge_cells("C{}:E{}".format(row, row))
-            ws["C{}".format(row)] = self.lang["desert"]
+            ws["C{}".format(row)] = self.lang["excel_desert"]
             ws["C{}".format(row)].style = h1_center
             ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
             ws["C{}".format(row)] = self.lang["host"]
-            ws["D{}".format(row)] = self.lang["guest"]
-            ws["E{}".format(row)] = self.lang["guest"]
+            ws["D{}".format(row)] = self.lang["excel_guest"]
+            ws["E{}".format(row)] = self.lang["excel_guest"]
             ws["C{}".format(row)].style = h2_center
             ws["D{}".format(row)].style = h2_center
             ws["E{}".format(row)].style = h2_center
