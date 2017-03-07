@@ -12,23 +12,25 @@ Description:    Select an Excel (.xlsx) or notepad (.txt) document.
 
 Non standard Dependencies:
                 * openpyxl verified to work on versions: 2.4.0 - 2.4.6
+                * docx verified to work on version: 0.8.6
 
 """
 
 # Import needed modules
-import openpyxl
 import os
-import tkinter
 import random
 import csv
+import tkinter
 from tkinter import filedialog
 from tkinter import messagebox
-from openpyxl.styles import *
 from collections import deque
+import openpyxl
+from openpyxl.styles import *
+from docx import Document
 
 # Constants
 # =========
-OPENPYXL_VERSION = "2.4"
+OPENPYXL_VERSION = "2.4"  # Todo, check docx aswell.
 
 
 def rotate(l, n):
@@ -590,11 +592,21 @@ class Hmi:
             self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups * 2]
             self.groups_desert = self.list_sorted_participants[self.num_groups * 2:self.num_groups * 3]
 
+    def generate_docx_letters(self):
+        """
+        Generates a docx file containing all the letters.
+        """
+        # TODO, create something useful from this!
+        document = Document()
+        for i in range(0, 100):
+            document.add_heading(str(i), 0)
+            document.add_page_break()
+            document.save("sdf.docx")
+
     def generate_result(self):
         """
         Start the process of generating the results.
         """
-
         # Read the participant file contents.
         read_file_result = self.read_file_contents()
         if read_file_result == 0:
@@ -625,6 +637,9 @@ class Hmi:
 
         # Save the result
         self.save_to_file()
+
+        if self.iv_generate_letters.get():
+            self.generate_docx_letters()
 
     def log_output(self, text, color="black"):
         """
