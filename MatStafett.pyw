@@ -222,6 +222,7 @@ class Hmi:
     def read_file_contents(self):
         """
         Read the participant list in the selected file.
+        :return result: 0 - OK, 1 - Unsupported File
         """
         # prepare to get all participants
         self.list_participants = []
@@ -236,6 +237,7 @@ class Hmi:
                     # Ignore blank lines
                     if line.strip():
                         self.list_participants.append(line)
+            return 0
 
         # If it is a xlsx file check column A for participants.
         # =====================================================
@@ -243,7 +245,7 @@ class Hmi:
             wb = openpyxl.load_workbook(file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
-            for number, row in enumerate(ws["A1:A{}".format(max_rows)]):
+            for number, row in enumerate(ws["A1:A{}".format(max_rows)], start=1):
                 for cell in row:
                     if cell.value is not None:
                         # address column
@@ -252,9 +254,10 @@ class Hmi:
                         allergies = ws["C{}".format(number)].value
                         # [name, address, allergies]
                         self.list_participants.append([cell.value, address, allergies])
+            return 0
         else:
             # Should not be possible to end up here, but just in case...
-            self.log_output(self.lang["error_file_types"], "red")
+            return 1
 
     def create_lineup(self):
         """
@@ -359,15 +362,31 @@ class Hmi:
             # Open Excel workbook
             # ===================
             wb = openpyxl.Workbook()
+
+            # Sheet 1 list of participants
+            # ============================
+
             ws = wb.active
             ws.title = self.lang["excel_sheet_name_one"]
 
+            for line_no, participant in enumerate(self.list_sorted_participants):
+                ws["A{}".format(line_no + 1)] = participant[0]
+                if participant[1] is not None:
+                    ws["B{}".format(line_no + 1)] = participant[1]
+                if participant[2] is not None:
+                    ws["C{}".format(line_no + 1)] = participant[2]
+
+            ws2 = wb.create_sheet(self.lang["excel_sheet_name_two"])
+
+            # Sheet 2 Generated result
+            # ============================
+
             # Setup styles
             # ============
-            ws.column_dimensions["A"].width = 34
-            ws.column_dimensions["C"].width = 34
-            ws.column_dimensions["D"].width = 34
-            ws.column_dimensions["E"].width = 34
+            ws2.column_dimensions["A"].width = 34
+            ws2.column_dimensions["C"].width = 34
+            ws2.column_dimensions["D"].width = 34
+            ws2.column_dimensions["E"].width = 34
             h1 = NamedStyle(name="h1", font=Font(size=15, bold=True, color="1f497d"),
                             border=Border(bottom=Side(style="thick", color="4f81bd")))
             h1_center = NamedStyle(name="h1_center",
@@ -385,107 +404,97 @@ class Hmi:
             # =================================
 
             # Summary header
-            ws["A1"] = "{}".format(self.lang["excel_summary"])
-            ws["A1"].style = h1
+            ws2["A1"] = "{}".format(self.lang["excel_summary"])
+            ws2["A1"].style = h1
 
             # Starter hosts
-            ws["A2"] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_starter"])
-            ws["A2"].style = h2
+            ws2["A2"] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_starter"])
+            ws2["A2"].style = h2
             row = 3
             for name in self.host_s:
-                ws["A{}".format(row)] = name
+                ws2["A{}".format(row)] = name
                 row += 1
             row += 2
 
             # Main course hosts
-            ws["A{}".format(row)] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_main_course"])
-            ws["A{}".format(row)].style = h2
+            ws2["A{}".format(row)] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_main_course"])
+            ws2["A{}".format(row)].style = h2
             row += 1
             for name in self.host_m:
-                ws["A{}".format(row)] = name
+                ws2["A{}".format(row)] = name
                 row += 1
             row += 2
 
             # Desert hosts
-            ws["A{}".format(row)] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_desert"])
-            ws["A{}".format(row)].style = h2
+            ws2["A{}".format(row)] = "{} {}:".format(self.lang["excel_host"], self.lang["excel_desert"])
+            ws2["A{}".format(row)].style = h2
             row += 1
             for name in self.host_d:
-                ws["A{}".format(row)] = name
+                ws2["A{}".format(row)] = name
                 row += 1
 
             # Column C, D, E: results
             # =================================
             # Starters
-            ws.merge_cells("C1:E1")
-            ws["C1"] = self.lang["excel_starter"]
-            ws["C1"].style = h1_center
-            ws["D1"].style = h1_center  # needed for the border, even though the cells are merged
-            ws["E1"].style = h1_center  # needed for the border, even though the cells are merged
-            ws["C2"] = self.lang["excel_host"]
-            ws["D2"] = self.lang["excel_guest"]
-            ws["E2"] = self.lang["excel_guest"]
-            ws["C2"].style = h2_center
-            ws["D2"].style = h2_center
-            ws["E2"].style = h2_center
+            ws2.merge_cells("C1:E1")
+            ws2["C1"] = self.lang["excel_starter"]
+            ws2["C1"].style = h1_center
+            ws2["D1"].style = h1_center  # needed for the border, even though the cells are merged
+            ws2["E1"].style = h1_center  # needed for the border, even though the cells are merged
+            ws2["C2"] = self.lang["excel_host"]
+            ws2["D2"] = self.lang["excel_guest"]
+            ws2["E2"] = self.lang["excel_guest"]
+            ws2["C2"].style = h2_center
+            ws2["D2"].style = h2_center
+            ws2["E2"].style = h2_center
             row = 3
             for index, host in enumerate(self.host_s):
-                ws["C{}".format(row)] = host
-                ws["D{}".format(row)] = self.guest_s_1[index]
-                ws["E{}".format(row)] = self.guest_s_2[index]
+                ws2["C{}".format(row)] = host
+                ws2["D{}".format(row)] = self.guest_s_1[index]
+                ws2["E{}".format(row)] = self.guest_s_2[index]
                 row += 1
 
             # Main Course
             row += 1
-            ws.merge_cells("C{}:E{}".format(row, row))
-            ws["C{}".format(row)] = self.lang["excel_main_course"]
-            ws["C{}".format(row)].style = h1_center
-            ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
-            ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
+            ws2.merge_cells("C{}:E{}".format(row, row))
+            ws2["C{}".format(row)] = self.lang["excel_main_course"]
+            ws2["C{}".format(row)].style = h1_center
+            ws2["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
+            ws2["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
-            ws["C{}".format(row)] = self.lang["excel_host"]
-            ws["D{}".format(row)] = self.lang["excel_guest"]
-            ws["E{}".format(row)] = self.lang["excel_guest"]
-            ws["C{}".format(row)].style = h2_center
-            ws["D{}".format(row)].style = h2_center
-            ws["E{}".format(row)].style = h2_center
+            ws2["C{}".format(row)] = self.lang["excel_host"]
+            ws2["D{}".format(row)] = self.lang["excel_guest"]
+            ws2["E{}".format(row)] = self.lang["excel_guest"]
+            ws2["C{}".format(row)].style = h2_center
+            ws2["D{}".format(row)].style = h2_center
+            ws2["E{}".format(row)].style = h2_center
             row += 1
             for index, host in enumerate(self.host_m):
-                ws["C{}".format(row)] = host
-                ws["D{}".format(row)] = self.guest_m_1[index]
-                ws["E{}".format(row)] = self.guest_m_2[index]
+                ws2["C{}".format(row)] = host
+                ws2["D{}".format(row)] = self.guest_m_1[index]
+                ws2["E{}".format(row)] = self.guest_m_2[index]
                 row += 1
 
             # Desert
             row += 1
-            ws.merge_cells("C{}:E{}".format(row, row))
-            ws["C{}".format(row)] = self.lang["excel_desert"]
-            ws["C{}".format(row)].style = h1_center
-            ws["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
-            ws["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
+            ws2.merge_cells("C{}:E{}".format(row, row))
+            ws2["C{}".format(row)] = self.lang["excel_desert"]
+            ws2["C{}".format(row)].style = h1_center
+            ws2["D{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
+            ws2["E{}".format(row)].style = h1_center  # needed for the border, even though the cells are merged
             row += 1
-            ws["C{}".format(row)] = self.lang["excel_host"]
-            ws["D{}".format(row)] = self.lang["excel_guest"]
-            ws["E{}".format(row)] = self.lang["excel_guest"]
-            ws["C{}".format(row)].style = h2_center
-            ws["D{}".format(row)].style = h2_center
-            ws["E{}".format(row)].style = h2_center
+            ws2["C{}".format(row)] = self.lang["excel_host"]
+            ws2["D{}".format(row)] = self.lang["excel_guest"]
+            ws2["E{}".format(row)] = self.lang["excel_guest"]
+            ws2["C{}".format(row)].style = h2_center
+            ws2["D{}".format(row)].style = h2_center
+            ws2["E{}".format(row)].style = h2_center
             row += 1
             for index, host in enumerate(self.host_d):
-                ws["C{}".format(row)] = host
-                ws["D{}".format(row)] = self.guest_d_1[index]
-                ws["E{}".format(row)] = self.guest_d_2[index]
+                ws2["C{}".format(row)] = host
+                ws2["D{}".format(row)] = self.guest_d_1[index]
+                ws2["E{}".format(row)] = self.guest_d_2[index]
                 row += 1
-
-            # Sheet 2 list of participants
-            # ============================
-            ws2 = wb.create_sheet(self.lang["excel_sheet_name_two"])
-            for line_no, participant in enumerate(self.list_sorted_participants):
-                ws2["A{}".format(line_no + 1)] = participant[0]
-                if participant[1] is not None:
-                    ws2["B{}".format(line_no + 1)] = participant[1]
-                if participant[2] is not None:
-                    ws2["C{}".format(line_no + 1)] = participant[2]
 
             # Save! (also closes the file)
             try:
@@ -513,14 +522,14 @@ class Hmi:
         # Get all the participants:
         # =========================
         # Is this based on a previous result or not?
-        if self.iv_new_year_same_lineup.get():
-            list_participants = self.prev_starter_hosts + self.prev_main_hosts + self.prev_desert_hosts
-            # Make sure the three groups are equal in size
-            if not (len(self.prev_starter_hosts) == len(self.prev_main_hosts) and
-                    len(self.prev_main_hosts) == len(self.prev_desert_hosts)):
-                raise ValueError(self.lang["valueerror_not_even_dist"])
-        else:
-            list_participants = self.list_participants
+        # if self.iv_new_year_same_lineup.get():
+        #     list_participants = self.prev_starter_hosts + self.prev_main_hosts + self.prev_desert_hosts
+        #     # Make sure the three groups are equal in size
+        #     if not (len(self.prev_starter_hosts) == len(self.prev_main_hosts) and
+        #             len(self.prev_main_hosts) == len(self.prev_desert_hosts)):
+        #         raise ValueError(self.lang["valueerror_not_even_dist"])
+        # else:
+        list_participants = self.list_participants
 
         # Verify that it is an ok number of participants
         # ==============================================
@@ -557,116 +566,47 @@ class Hmi:
 
         # Is this based on a previous result or not?
         if self.iv_new_year_same_lineup.get():
+            # Get the list of participants, but shift all the hosts so that no one hosts the same part as last time.
+            self.groups_desert = self.list_participants[0:self.num_groups]
+            self.groups_starter = self.list_participants[self.num_groups:self.num_groups * 2]
+            self.groups_main = self.list_participants[self.num_groups * 2:self.num_groups * 3]
+
             # Rotate the lists to make sure no one meets the same participants as last round.
-            self.prev_main_hosts = rotate(self.prev_main_hosts, 0)
-            self.prev_desert_hosts = rotate(self.prev_desert_hosts, 4)
-            self.prev_starter_hosts = rotate(self.prev_starter_hosts, 8)
-            # Shift the hosts one step to make sure no one hosts the same part of the dinner as last time
-            self.list_sorted_participants += self.prev_main_hosts
-            self.list_sorted_participants += self.prev_desert_hosts
-            self.list_sorted_participants += self.prev_starter_hosts
+            self.groups_starter = rotate(self.groups_starter, 0)
+            self.groups_main = rotate(self.groups_main, 4)
+            self.groups_desert = rotate(self.groups_desert, 8)
+
+            # copy all participants to a sorted list.
+            self.list_sorted_participants += self.groups_starter
+            self.list_sorted_participants += self.groups_main
+            self.list_sorted_participants += self.groups_desert
         else:
             for index in self.list_rand_index:
                 self.list_sorted_participants.append(self.list_participants[index])
 
         # create three equal sized lists containing all participants
         # ==========================================================
-        self.groups_starter = self.list_sorted_participants[0:self.num_groups]
-        self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups * 2]
-        self.groups_desert = self.list_sorted_participants[self.num_groups * 2:self.num_groups * 3]
-
-    def get_previous_lineup(self):
-        """
-        Get the list of previous participants.
-        :return result: 0 - OK, 1 - Unsupported File, 2 - Faulty DataBool
-        """
-        # This will only work for excel files.
-        if self.file_type != ".xlsx":
-            return 1
-        else:
-            # Reset needed variables
-            # ======================
-            languages = []
-            host = []
-            self.prev_starter_hosts = []
-            self.prev_main_hosts = []
-            self.prev_desert_hosts = []
-            get_participants = [False, "starter", "main", "desert"]  # which type of participants to get.
-            p_get_participants = 0  # pointer to get_participants
-            excel_file = os.path.join(self.file_path, self.file_name)  # save the excel file path
-
-            # get some phrases we need in all possible languages.
-            # ===================================================
-            with open(self.csv_file, "r", encoding="utf8") as csv_file:
-                reader = csv.DictReader(csv_file, delimiter=",")
-
-                # get all available languages.
-                # ===========================
-                # first get all headers.
-                for header in reader.fieldnames:
-                    languages.append(header)
-                # then remove the first header, it is not a language
-                languages.pop(0)
-                # Now get the "host" phrase in all known/supported languages.
-                for row in reader:
-                    if row["phrase"] == "host":
-                        for language in languages:
-                            # add a space after the text to reduce the risk of the string being a part of a name
-                            host.append("{} ".format(row[language]))
-
-            # Open the excel file and search for participants
-            # ===============================================
-            wb = openpyxl.load_workbook(excel_file)
-            ws = wb.get_sheet_by_name(wb.sheetnames[0])
-            max_rows = ws.max_row
-            for row in ws["A1:A{}".format(max_rows)]:
-                for cell in row:
-                    if cell.value is not None:
-                        # skip blank lines.
-                        if cell.value == "":
-                            pass
-                        # Check for headlines
-                        elif any(word in cell.value for word in host):
-                            p_get_participants += 1  # increase the pointer
-                        # Add the previous starters hosts
-                        elif get_participants[p_get_participants] == "starter":
-                            self.prev_starter_hosts.append(cell.value)
-                        # Add the previous main course hosts
-                        elif get_participants[p_get_participants] == "main":
-                            self.prev_main_hosts.append(cell.value)
-                        # Add the previous desert hosts
-                        elif get_participants[p_get_participants] == "desert":
-                            self.prev_desert_hosts.append(cell.value)
-
-            # Quick check, if this has worked p_get_participants show now have reached max.
-            if not p_get_participants == len(get_participants) - 1:
-                return 2
-            # Success!
-            return 0
+            self.groups_starter = self.list_sorted_participants[0:self.num_groups]
+            self.groups_main = self.list_sorted_participants[self.num_groups:self.num_groups * 2]
+            self.groups_desert = self.list_sorted_participants[self.num_groups * 2:self.num_groups * 3]
 
     def generate_result(self):
         """
         Start the process of generating the results.
         """
-        # See if previous line up should be taken into account.
-        if self.iv_new_year_same_lineup.get():
-            # Try to get the previous participants.
-            previous_line_up_read = self.get_previous_lineup()
-            if previous_line_up_read == 0:
-                self.log_output(self.lang["progress_prev_lineup_read"])
-            elif previous_line_up_read == 1:
-                self.log_output(self.lang["error_not_excel"], "red")
-                return
-            elif previous_line_up_read == 2:
-                self.log_output(self.lang["error_excel_data_new_lineup"], "red")
-                return
-            else:
-                self.log_output(self.lang["error_unexpected_read_file"], "red")
-                return
 
+        # Read the participant file contents.
+        read_file_result = self.read_file_contents()
+        if read_file_result == 0:
+            self.log_output(self.lang["progress_prev_lineup_read"])  # Todo update logstring
+        elif read_file_result == 1:
+            self.log_output(self.lang["error_file_types"], "red")  # Todo, if txt is dropped. remove this.
+            self.log_output(self.lang["error_not_excel"], "red")
+            return
         else:
-            # Just read the new file contents.
-            self.read_file_contents()
+            self.log_output(self.lang["error_unexpected_read_file"], "red")
+            return
+
         try:
             self.validate_number_of_participants()
         except ValueError as e:

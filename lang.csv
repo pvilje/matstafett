@@ -25,8 +25,8 @@ excel_desert,Desert,Efterrätt
 excel_summary,Summary,Sammanfattning
 excel_host,Host,Värd
 excel_guest,Guest,Gäst
-excel_sheet_name_one,Food Relay Lineup,Matstafett uppställning
-excel_sheet_name_two,Participant list,Deltagarlista
+excel_sheet_name_one,Participant list,Deltagarlista
+excel_sheet_name_two,Food Relay Lineup,Matstafett uppställning
 error,Error,Fel
 error_save,"Error while saving, make sure the selected file is not open and try again.","Fel vid sparning, kolla att filen inte är öppen och försök igen."
 error_file_not_found,"Cannot find the file specified.","Kan inte hitta filen."
