@@ -78,9 +78,7 @@ class Hmi:
         self.guest_m_2 = []
         self.guest_d_1 = []
         self.guest_d_2 = []
-        self.prev_starter_hosts = []
-        self.prev_main_hosts = []
-        self.prev_desert_hosts = []
+        self.sorted_result = []
 
         # Get language pack
         # =================
@@ -279,6 +277,7 @@ class Hmi:
         self.guest_m_2 = []
         self.guest_d_1 = []
         self.guest_d_2 = []
+        self.sorted_result = []
 
         # loop through all groups, using three indexes for the group lists
         # =================================================================
@@ -288,19 +287,19 @@ class Hmi:
             if offset_2 >= self.num_groups:
                 offset_2 = 0
             # starters
-            self.host_s.append(self.groups_starter[base_index][0])
-            self.guest_s_1.append(self.groups_main[base_index][0])
-            self.guest_s_2.append(self.groups_desert[base_index][0])
+            self.host_s.append(self.groups_starter[base_index])
+            self.guest_s_1.append(self.groups_main[base_index])
+            self.guest_s_2.append(self.groups_desert[base_index])
 
             # main course
-            self.host_m.append(self.groups_main[offset_1][0])
-            self.guest_m_1.append(self.groups_starter[base_index][0])
-            self.guest_m_2.append(self.groups_desert[offset_2][0])
+            self.host_m.append(self.groups_main[offset_1])
+            self.guest_m_1.append(self.groups_starter[base_index])
+            self.guest_m_2.append(self.groups_desert[offset_2])
 
             # desert
-            self.host_d.append(self.groups_desert[offset_1][0])
-            self.guest_d_1.append(self.groups_starter[base_index][0])
-            self.guest_d_2.append(self.groups_main[offset_2][0])
+            self.host_d.append(self.groups_desert[offset_1])
+            self.guest_d_1.append(self.groups_starter[base_index])
+            self.guest_d_2.append(self.groups_main[offset_2])
 
             base_index += 1
             offset_1 += 1
@@ -323,21 +322,21 @@ class Hmi:
             with open(os.path.join(self.file_path, filename), "w", encoding="utf8") as f:
                 f.write("{}\n".format(self.lang["excel_starter"]))
                 for index, host in enumerate(self.host_s):
-                    f.write("{}: {}".format(self.lang["excel_host"], host))
-                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_s_1[index]))
-                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_s_2[index]))
+                    f.write("{}: {}".format(self.lang["excel_host"], host[0]))
+                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_s_1[index][0]))
+                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_s_2[index][0]))
 
                 f.write("{}\n".format(self.lang["excel_main_course"]))
                 for index, host in enumerate(self.host_m):
-                    f.write("{}: {}".format(self.lang["excel_host"], host))
-                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_m_1[index]))
-                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_m_2[index]))
+                    f.write("{}: {}".format(self.lang["excel_host"], host[0]))
+                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_m_1[index][0]))
+                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_m_2[index][0]))
 
                 f.write("{}\n".format(self.lang["excel_desert"]))
                 for index, host in enumerate(self.host_d):
-                    f.write("{}: {}".format(self.lang["excel_host"], host))
-                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_d_1[index]))
-                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_d_2[index]))
+                    f.write("{}: {}".format(self.lang["excel_host"], host[0]))
+                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_d_1[index][0]))
+                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_d_2[index][0]))
 
             self.log_output("{} \n{}".format(self.lang["progress_saved_to"], filename))
 
@@ -414,7 +413,7 @@ class Hmi:
             ws2["A2"].style = h2
             row = 3
             for name in self.host_s:
-                ws2["A{}".format(row)] = name
+                ws2["A{}".format(row)] = name[0]
                 row += 1
             row += 2
 
@@ -423,7 +422,7 @@ class Hmi:
             ws2["A{}".format(row)].style = h2
             row += 1
             for name in self.host_m:
-                ws2["A{}".format(row)] = name
+                ws2["A{}".format(row)] = name[0]
                 row += 1
             row += 2
 
@@ -432,7 +431,7 @@ class Hmi:
             ws2["A{}".format(row)].style = h2
             row += 1
             for name in self.host_d:
-                ws2["A{}".format(row)] = name
+                ws2["A{}".format(row)] = name[0]
                 row += 1
 
             # Column C, D, E: results
@@ -451,9 +450,9 @@ class Hmi:
             ws2["E2"].style = h2_center
             row = 3
             for index, host in enumerate(self.host_s):
-                ws2["C{}".format(row)] = host
-                ws2["D{}".format(row)] = self.guest_s_1[index]
-                ws2["E{}".format(row)] = self.guest_s_2[index]
+                ws2["C{}".format(row)] = host[0]
+                ws2["D{}".format(row)] = self.guest_s_1[index][0]
+                ws2["E{}".format(row)] = self.guest_s_2[index][0]
                 row += 1
 
             # Main Course
@@ -472,9 +471,9 @@ class Hmi:
             ws2["E{}".format(row)].style = h2_center
             row += 1
             for index, host in enumerate(self.host_m):
-                ws2["C{}".format(row)] = host
-                ws2["D{}".format(row)] = self.guest_m_1[index]
-                ws2["E{}".format(row)] = self.guest_m_2[index]
+                ws2["C{}".format(row)] = host[0]
+                ws2["D{}".format(row)] = self.guest_m_1[index][0]
+                ws2["E{}".format(row)] = self.guest_m_2[index][0]
                 row += 1
 
             # Desert
@@ -493,9 +492,9 @@ class Hmi:
             ws2["E{}".format(row)].style = h2_center
             row += 1
             for index, host in enumerate(self.host_d):
-                ws2["C{}".format(row)] = host
-                ws2["D{}".format(row)] = self.guest_d_1[index]
-                ws2["E{}".format(row)] = self.guest_d_2[index]
+                ws2["C{}".format(row)] = host[0]
+                ws2["D{}".format(row)] = self.guest_d_1[index][0]
+                ws2["E{}".format(row)] = self.guest_d_2[index][0]
                 row += 1
 
             # Save! (also closes the file)
@@ -523,14 +522,6 @@ class Hmi:
         """
         # Get all the participants:
         # =========================
-        # Is this based on a previous result or not?
-        # if self.iv_new_year_same_lineup.get():
-        #     list_participants = self.prev_starter_hosts + self.prev_main_hosts + self.prev_desert_hosts
-        #     # Make sure the three groups are equal in size
-        #     if not (len(self.prev_starter_hosts) == len(self.prev_main_hosts) and
-        #             len(self.prev_main_hosts) == len(self.prev_desert_hosts)):
-        #         raise ValueError(self.lang["valueerror_not_even_dist"])
-        # else:
         list_participants = self.list_participants
 
         # Verify that it is an ok number of participants
@@ -597,11 +588,50 @@ class Hmi:
         Generates a docx file containing all the letters.
         """
         # TODO, create something useful from this!
+        # Base filename.
+        file_name = self.file_name.split(".")[0] + self.lang["word_file_name_letter"]
+        file_ext = ".docx"
+        # Find a free file name
+        # =====================
+        if os.path.isfile(os.path.join(self.file_path, "{}{}".format(file_name, file_ext))):
+            # File already existed, generate a new filename (add a number until a not used name is found)
+            file_no = 2
+            while os.path.isfile(
+                    os.path.join(
+                        self.file_path, "{}{}{}".format(file_name, str(file_no), file_ext))):
+                file_no += 1
+            file = os.path.join(
+                self.file_path, "{}{}{}".format(file_name, str(file_no), file_ext))
+        else:
+            file = os.path.join(self.file_path, "{}{}".format(file_name, file_ext))
+
+        # Create a docx object
         document = Document()
-        for i in range(0, 100):
-            document.add_heading(str(i), 0)
+
+        for i, host in enumerate(self.host_s):
+            document.add_heading(host[0], 1)
+            document.add_paragraph("Ska tillreda en förrätt!")
+
+            allergies = ""
+            if self.guest_s_1[i][2] is not None:
+                allergies += self.guest_s_1[i][2]
+            if self.guest_s_2[i][2] is not None:
+                allergies += self.guest_s_2[i][2]
+            document.add_paragraph("Allergier: {}".format(allergies))
             document.add_page_break()
-            document.save("sdf.docx")
+        for host in self.host_m:
+            document.add_heading(host[0], 1)
+            document.add_paragraph("Du är värd för en förrätt!\n"
+                                   "Den måltid du ska tillreda är fantastisk!")
+            document.add_page_break()
+        for i, host in enumerate(self.host_d, start=1):
+            document.add_heading(host[0], 1)
+            document.add_paragraph("Du är värd för en förrätt!\n"
+                                   "Den måltid du ska tillreda är fantastisk!")
+            if i != len(self.host_d):
+                document.add_page_break()
+
+        document.save(file)
 
     def generate_result(self):
         """
