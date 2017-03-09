@@ -27,6 +27,7 @@ from collections import deque
 import openpyxl
 from openpyxl.styles import *
 from docx import Document
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 # Constants
 # =========
@@ -112,7 +113,7 @@ class Hmi:
         # ============
         self.sv_filename = tkinter.StringVar()
         self.iv_new_year_same_lineup = tkinter.IntVar()
-        self.iv_generate_letters = tkinter.IntVar()  # Todo, not used yet
+        self.iv_generate_letters = tkinter.IntVar()
 
         # Input widgets
         # =============
@@ -178,6 +179,9 @@ class Hmi:
         self.t_output.grid(row=0, column=0, columnspan=2)
         self.scroll_x_output.grid(row=1, column=0, columnspan=2, sticky=tkinter.E + tkinter.W)
         self.scroll_y_output.grid(row=0, column=2, sticky=tkinter.N + tkinter.S)
+
+        # Preselect
+        self.iv_generate_letters.set(1)
 
     def select_file(self):
         """
@@ -507,7 +511,6 @@ class Hmi:
             else:
                 self.log_output(self.lang["progress_done"])
                 self.log_output("{} \n{}".format(self.lang["progress_saved_to"], file))
-                messagebox.showinfo(self.lang["progress_done"], "{}: {}".format(self.lang["dialog_done_msg"], file))
 
         else:
             # Should not be possible to end up here, but just in case...
@@ -587,7 +590,6 @@ class Hmi:
         """
         Generates a docx file containing all the letters.
         """
-        # TODO, create something useful from this!
         # Base filename.
         file_name = self.file_name.split(".")[0] + self.lang["word_file_name_letter"]
         file_ext = ".docx"
@@ -608,30 +610,70 @@ class Hmi:
         # Create a docx object
         document = Document()
 
-        for i, host in enumerate(self.host_s):
-            document.add_heading(host[0], 1)
-            document.add_paragraph("Ska tillreda en förrätt!")
+        #  Create a page in the document to tell each participant what to host and where to have starters.
+        # Starters
+        for i in range(0, len(self.host_s)):
+            # Heading containing the name
+            document.add_heading(self.host_s[i][0], 1)
+            # The part of the meal to prepare and allergies if any.
+            document.add_paragraph(
+                "{}".format(self.lang["word_to_prepare"])  # , style=[font.bold, True]
+            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            document.add_paragraph(
+                "{}".format(self.lang["word_starter"])
+            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
-            allergies = ""
-            if self.guest_s_1[i][2] is not None:
-                allergies += self.guest_s_1[i][2]
-            if self.guest_s_2[i][2] is not None:
-                allergies += self.guest_s_2[i][2]
-            document.add_paragraph("Allergier: {}".format(allergies))
+            allergies = self.get_allergies(self.host_s[i], self.guest_s_1[i], self.guest_s_2[i])
+            document.add_paragraph(
+                allergies
+            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
             document.add_page_break()
-        for host in self.host_m:
-            document.add_heading(host[0], 1)
-            document.add_paragraph("Du är värd för en förrätt!\n"
-                                   "Den måltid du ska tillreda är fantastisk!")
+        # Main course
+        for i in range(0, len(self.host_m)):
+            # Heading containing the name
+            document.add_heading(self.host_m[i][0], 1)
+            # The part of the meal to prepare and allergies if any.
+            document.add_paragraph(
+                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_main_course"])
+            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            allergies = self.get_allergies(self.host_m[i], self.guest_m_1[i], self.guest_m_2[i])
+            document.add_paragraph(
+                allergies
+            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             document.add_page_break()
-        for i, host in enumerate(self.host_d, start=1):
-            document.add_heading(host[0], 1)
-            document.add_paragraph("Du är värd för en förrätt!\n"
-                                   "Den måltid du ska tillreda är fantastisk!")
-            if i != len(self.host_d):
+        # Desert
+        # for i, host in enumerate(self.host_d, start=1):
+        for i in range(0, len(self.host_d)):
+            # Heading containing the name
+            document.add_heading(self.host_d[i][0], 1)
+            # The part of the meal to prepare and allergies if any.
+            document.add_paragraph(
+                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_desert"])
+            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            allergies = self.get_allergies(self.host_d[i], self.guest_d_1[i], self.guest_d_2[i])
+            document.add_paragraph(
+                allergies
+            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            if i+1 != len(self.host_d):
                 document.add_page_break()
 
         document.save(file)
+        self.log_output("{} \n{}".format(self.lang["progress_saved_to"], file))
+
+    def get_allergies(self, host, guest_1, guest_2):
+        """
+        Get all allergies as a list.
+        :return: A string containing all allergies. or None if no allergies.
+        """
+        allergies = ""
+        participants = [host, guest_1, guest_2]
+        for participant in participants:
+            if participant[2] is not None:
+                allergies += "{}, ".format(participant[2])
+        if len(allergies) < 1:
+            return "{}{}".format(self.lang["word_allergies"], self.lang["word_no_allergies"])
+        return "{}{}".format(self.lang["word_allergies"], allergies[:-2])
 
     def generate_result(self):
         """
@@ -671,16 +713,16 @@ class Hmi:
         if self.iv_generate_letters.get():
             self.generate_docx_letters()
 
-    def log_output(self, text, color="black"):
+    def log_output(self, string, color="black"):
         """
         Method to print text to the output frame.
-        :param text: The text to print
+        :param string: The text to print
         :param color: Text color
         """
         self.t_output.configure(state=tkinter.NORMAL)
-        if not text.endswith("\n"):
-            text += "\n"
-        self.t_output.insert(tkinter.END, text, color)
+        if not string.endswith("\n"):
+            string += "\n"
+        self.t_output.insert(tkinter.END, string, color)
         self.t_output.yview_moveto(1)
         self.t_output.configure(state=tkinter.DISABLED)
 

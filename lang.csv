@@ -28,6 +28,12 @@ excel_guest,Guest,Gäst
 excel_sheet_name_one,Participant list,Deltagarlista
 excel_sheet_name_two,Food Relay Lineup,Matstafett uppställning
 word_file_name_letter,_letters,_brev
+word_allergies,Allergies that you have to take into consideration:\n,Eventuella allergier som ni behöver ta hänsyn till:\n
+word_no_allergies,No allergies.,Inga allergier.
+word_to_prepare,"Welcome to participate in the food rally!\nThe part of the dinner you have been assigned is:\n","Välkomna att delta i matstafetten!\nDen del av måltiden ni har blivit tilldelade till förbereda är:\n"
+word_starter,Starter,Förrätt
+word_main_course,Main course,Huvudrätt
+word_desert,Desert,Efterrätt
 error,Error,Fel
 error_save,"Error while saving, make sure the selected file is not open and try again.","Fel vid sparning, kolla att filen inte är öppen och försök igen."
 error_file_not_found,"Cannot find the file specified.","Kan inte hitta filen."
