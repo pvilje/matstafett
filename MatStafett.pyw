@@ -28,6 +28,7 @@ import openpyxl
 from openpyxl.styles import *
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import Pt
 
 # Constants
 # =========
@@ -612,35 +613,42 @@ class Hmi:
 
         #  Create a page in the document to tell each participant what to host and where to have starters.
         # Starters
+        # Todo break out this to a seperate module
         for i in range(0, len(self.host_s)):
             # Heading containing the name
             document.add_heading(self.host_s[i][0], 1)
             # The part of the meal to prepare and allergies if any.
             document.add_paragraph(
-                "{}".format(self.lang["word_to_prepare"])  # , style=[font.bold, True]
-            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                "{}".format(self.lang["word_to_prepare"]),
+                style=document.styles["Body Text 2"]
+            )
             document.add_paragraph(
-                "{}".format(self.lang["word_starter"])
-            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                "{}".format(self.lang["word_starter"]),
+                style=document.styles["Body Text 2"]
+            )
 
             allergies = self.get_allergies(self.host_s[i], self.guest_s_1[i], self.guest_s_2[i])
             document.add_paragraph(
-                allergies
-            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                allergies,
+                style=document.styles["Body Text 2"]
+            )
 
             document.add_page_break()
+
         # Main course
         for i in range(0, len(self.host_m)):
             # Heading containing the name
             document.add_heading(self.host_m[i][0], 1)
             # The part of the meal to prepare and allergies if any.
             document.add_paragraph(
-                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_main_course"])
-            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_main_course"]),
+                style=document.styles["Body Text 2"]
+            )
             allergies = self.get_allergies(self.host_m[i], self.guest_m_1[i], self.guest_m_2[i])
             document.add_paragraph(
-                allergies
-            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                allergies,
+                style=document.styles["Body Text 2"]
+            )
             document.add_page_break()
         # Desert
         # for i, host in enumerate(self.host_d, start=1):
@@ -649,15 +657,27 @@ class Hmi:
             document.add_heading(self.host_d[i][0], 1)
             # The part of the meal to prepare and allergies if any.
             document.add_paragraph(
-                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_desert"])
-            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_desert"]),
+                style=document.styles["Body Text 2"]
+            )
             allergies = self.get_allergies(self.host_d[i], self.guest_d_1[i], self.guest_d_2[i])
             document.add_paragraph(
-                allergies
-            ).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                allergies,
+                style=document.styles["Body Text 2"]
+            )
             if i+1 != len(self.host_d):
                 document.add_page_break()
 
+        # Style the document!
+        # ===================
+        # Body text 2
+        document.styles["Body Text 2"].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        document.styles["Body Text 2"].font.name = "Calibri"
+        document.styles["Body Text 2"].font.size = Pt(12)
+        document.styles["Body Text 2"].hidden = False
+        document.styles["Body Text 2"].quick_style = True
+
+        # Save
         document.save(file)
         self.log_output("{} \n{}".format(self.lang["progress_saved_to"], file))
 
