@@ -613,63 +613,21 @@ class Hmi:
 
         #  Create a page in the document to tell each participant what to host and where to have starters.
         # Starters
-        # Todo break out this to a seperate module
-        for i in range(0, len(self.host_s)):
-            # Heading containing the name
-            document.add_heading(self.host_s[i][0], 1)
-            # The part of the meal to prepare and allergies if any.
-            document.add_paragraph(
-                "{}".format(self.lang["word_to_prepare"]),
-                style=document.styles["Body Text 2"]
-            )
-            document.add_paragraph(
-                "{}".format(self.lang["word_starter"]),
-                style=document.styles["Body Text 2"]
-            )
-
-            allergies = self.get_allergies(self.host_s[i], self.guest_s_1[i], self.guest_s_2[i])
-            document.add_paragraph(
-                allergies,
-                style=document.styles["Body Text 2"]
-            )
-
-            document.add_page_break()
-
+        document = self.print_to_word(document, "starter", self.host_s)
         # Main course
-        for i in range(0, len(self.host_m)):
-            # Heading containing the name
-            document.add_heading(self.host_m[i][0], 1)
-            # The part of the meal to prepare and allergies if any.
-            document.add_paragraph(
-                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_main_course"]),
-                style=document.styles["Body Text 2"]
-            )
-            allergies = self.get_allergies(self.host_m[i], self.guest_m_1[i], self.guest_m_2[i])
-            document.add_paragraph(
-                allergies,
-                style=document.styles["Body Text 2"]
-            )
-            document.add_page_break()
+        document = self.print_to_word(document, "main_course", self.host_m)
         # Desert
-        # for i, host in enumerate(self.host_d, start=1):
-        for i in range(0, len(self.host_d)):
-            # Heading containing the name
-            document.add_heading(self.host_d[i][0], 1)
-            # The part of the meal to prepare and allergies if any.
-            document.add_paragraph(
-                "{}{}".format(self.lang["word_to_prepare"], self.lang["word_desert"]),
-                style=document.styles["Body Text 2"]
-            )
-            allergies = self.get_allergies(self.host_d[i], self.guest_d_1[i], self.guest_d_2[i])
-            document.add_paragraph(
-                allergies,
-                style=document.styles["Body Text 2"]
-            )
-            if i+1 != len(self.host_d):
-                document.add_page_break()
+        document = self.print_to_word(document, "desert", self.host_d)
 
         # Style the document!
         # ===================
+        # Body text 1
+        document.styles["Body Text 3"].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        document.styles["Body Text 3"].font.name = "Lucida Calligraphy"
+        document.styles["Body Text 3"].font.size = Pt(12)
+        document.styles["Body Text 3"].font.underline = True
+        document.styles["Body Text 3"].hidden = False
+        document.styles["Body Text 3"].quick_style = True
         # Body text 2
         document.styles["Body Text 2"].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         document.styles["Body Text 2"].font.name = "Calibri"
@@ -678,16 +636,70 @@ class Hmi:
         document.styles["Body Text 2"].quick_style = True
 
         # Save
+        # ====
         document.save(file)
         self.log_output("{} \n{}".format(self.lang["progress_saved_to"], file))
 
-    def get_allergies(self, host, guest_1, guest_2):
+    def print_to_word(self, doc, part, content):
+        """
+
+        :param doc: docx document object
+        :param part: part of the meal
+        :param content: the contents
+        :return: the modiefied document
+        """
+        if part == "starter" or part == "main_course" or part == "desert":
+            for i in range(0, len(content)):
+                # Heading containing the name
+                doc.add_paragraph(content[i][0],
+                                  style=doc.styles["Body Text 3"])
+                # The part of the meal to prepare and allergies if any.
+                doc.add_paragraph(
+                    "{}".format(self.lang["word_to_prepare"]),
+                    style=doc.styles["Body Text 2"]
+                )
+                doc.add_paragraph(
+                    "{}".format(self.lang["word_starter"]),
+                    style=doc.styles["Body Text 2"]
+                )
+
+                allergies = self.get_allergies(part, i)
+                doc.add_paragraph(
+                    allergies,
+                    style=doc.styles["Body Text 2"]
+                )
+
+                # tell people where to have starters
+                if part == "main_course" or part == "desert":
+                    if content[i][0] in self.guest_s_1:
+                        host_index = self.guest_s_1.index(content[i][0])
+                        print(host_index)
+                    elif content[i][0] in self.guest_s_2:  # Todo, what if there is no match?
+                        host_index = self.guest_s_2.index(content[i][0])
+                        print(host_index)
+                        print(self.host_s[host_index][0])
+                        print(self.host_s[host_index][2])
+
+                doc.add_page_break()
+            return doc
+        elif part == "where_to_go":
+            pass
+
+    def get_allergies(self, part, i):
         """
         Get all allergies as a list.
+        :param part: part of the meal
+        :param i: index value
         :return: A string containing all allergies. or None if no allergies.
         """
         allergies = ""
-        participants = [host, guest_1, guest_2]
+        if part == "starter":
+            participants = [self.host_s[i], self.guest_s_1[i], self.guest_s_2[i]]
+        elif part == "main_course":
+            participants = [self.host_m[i], self.guest_m_1[i], self.guest_m_2[i]]
+        else:
+            participants = [self.host_d[i], self.guest_d_1[i], self.guest_d_2[i]]
+
         for participant in participants:
             if participant[2] is not None:
                 allergies += "{}, ".format(participant[2])
