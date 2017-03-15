@@ -34,6 +34,7 @@ word_to_prepare,"Welcome to participate in the food rally!\nThe part of the dinn
 word_starter,Starter,Förrätt
 word_main_course,Main course,Huvudrätt
 word_desert,Desert,Efterrätt
+word_goto_starters,You are welcome to: {} for starters\nAddess: {},Ni är välkomna till {} för att äta förrätt.\nAdress: {}
 error,Error,Fel
 error_save,"Error while saving, make sure the selected file is not open and try again.","Fel vid sparning, kolla att filen inte är öppen och försök igen."
 error_file_not_found,"Cannot find the file specified.","Kan inte hitta filen."

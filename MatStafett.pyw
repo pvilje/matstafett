@@ -634,6 +634,9 @@ class Hmi:
         document.styles["Body Text 2"].font.size = Pt(12)
         document.styles["Body Text 2"].hidden = False
         document.styles["Body Text 2"].quick_style = True
+        document.styles["Body Text 2"].paragraph_format.space_before = Pt(12)
+        document.styles["Body Text 2"].paragraph_format.space_after = Pt(12)
+        document.styles["Body Text 2"].paragraph_format.line_spacing = Pt(12)
 
         # Save
         # ====
@@ -642,12 +645,27 @@ class Hmi:
 
     def print_to_word(self, doc, part, content):
         """
-
+        Prints specified content to the word document
         :param doc: docx document object
         :param part: part of the meal
         :param content: the contents
         :return: the modiefied document
         """
+        def find_index(needle, haystack):
+            """
+            Finds needle: "needle" in list "haystack" and returns the index
+            :param needle: what to find
+            :param haystack: where to find it.
+            :return: the index for needle in haystack
+            """
+            for index, sub_list in enumerate(haystack):
+                if needle in sub_list:
+                    return index
+            # Should not be here.
+            return None
+
+        # Letters that are sent to participants before the food rally starts
+        # ==================================================================
         if part == "starter" or part == "main_course" or part == "desert":
             for i in range(0, len(content)):
                 # Heading containing the name
@@ -669,21 +687,35 @@ class Hmi:
                     style=doc.styles["Body Text 2"]
                 )
 
-                # tell people where to have starters
+                # tell people where to have starters (if not a starter host)
                 if part == "main_course" or part == "desert":
-                    if content[i][0] in self.guest_s_1:
-                        host_index = self.guest_s_1.index(content[i][0])
-                        print(host_index)
-                    elif content[i][0] in self.guest_s_2:  # Todo, what if there is no match?
-                        host_index = self.guest_s_2.index(content[i][0])
-                        print(host_index)
-                        print(self.host_s[host_index][0])
-                        print(self.host_s[host_index][2])
-
+                    # Find the host
+                    if any(content[i][0] == participant[0] for participant in self.guest_s_1):
+                        host_index = find_index(content[i][0], self.guest_s_1)
+                    elif any(content[i][0] == participant[0] for participant in self.guest_s_2):
+                        host_index = find_index(content[i][0], self.guest_s_2)
+                    else:
+                        # Todo translate
+                        # Should not be possible to be here
+                        raise IndexError("Participant not found, tell developer. Should not be possible.")
+                    doc.add_paragraph(
+                        self.lang["word_goto_starters"].format(self.host_s[host_index][0], self.host_s[host_index][1]),
+                        style=doc.styles["Body Text 2"]
+                    )
                 doc.add_page_break()
             return doc
+
+        # Letters that are sent to the participants to be distributed during the dinners
+        # ==============================================================================
         elif part == "where_to_go":
-            pass
+            # Hoppas ni har njutit av måltiden
+            # Nu ska ni vidare!
+            # x ska till y. ..
+            return doc
+
+        else:
+            # Should not be here, just return the document untouched
+            return doc
 
     def get_allergies(self, part, i):
         """
