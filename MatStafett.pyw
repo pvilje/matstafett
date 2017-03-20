@@ -619,6 +619,9 @@ class Hmi:
         # Desert
         document = self.print_to_word(document, "desert", self.host_d)
 
+        # Add pages for where the participants should go next:
+        document = self.print_to_word(document, "where_to_go", None)
+
         # Style the document!
         # ===================
         # Body text 1
@@ -661,8 +664,25 @@ class Hmi:
             for index, sub_list in enumerate(haystack):
                 if needle in sub_list:
                     return index
-            # Should not be here.
+            # Needle not in haystack
             return None
+
+        def find_next_host(needle, haystack1, haystack2, haystack3, needlestack):
+            """
+            Searches for the the guest lists to see where a participant is supposed to go next.
+            :param needlestack: list to find the hosts on.
+            :param haystack1: list to search in
+            :param haystack2: list to search in
+            :param haystack3: list to search in
+            :param needle: Who to search for
+            :return: the name of the host
+            """
+            found_index = find_index(needle, haystack1)
+            if found_index is None:
+                found_index = find_index(needle, haystack2)
+            if found_index is None:
+                found_index = find_index(needle, haystack3)
+            return needlestack[found_index][0]
 
         # Letters that are sent to participants before the food rally starts
         # ==================================================================
@@ -677,7 +697,7 @@ class Hmi:
                     style=doc.styles["Body Text 2"]
                 )
                 doc.add_paragraph(
-                    "{}".format(self.lang["word_starter"]),
+                    "{}".format(self.lang["word_{}".format(part)]),
                     style=doc.styles["Body Text 2"]
                 )
 
@@ -695,7 +715,7 @@ class Hmi:
                     elif any(content[i][0] == participant[0] for participant in self.guest_s_2):
                         host_index = find_index(content[i][0], self.guest_s_2)
                     else:
-                        # Todo translate
+                        # Todo translate error msg
                         # Should not be possible to be here
                         raise IndexError("Participant not found, tell developer. Should not be possible.")
                     doc.add_paragraph(
@@ -707,10 +727,71 @@ class Hmi:
 
         # Letters that are sent to the participants to be distributed during the dinners
         # ==============================================================================
+        # Todo: Looks messy if the host is welcome to the host.. also add adresses.
+
         elif part == "where_to_go":
-            # Hoppas ni har njutit av måltiden
-            # Nu ska ni vidare!
-            # x ska till y. ..
+            # Create letters for the starters
+            for i in range(0, len(self.host_s)):
+                doc.add_paragraph(
+                    self.lang["word_leave_from_starters"],
+                    style=doc.styles["Body Text 2"]
+                )
+                # Find the list the host is in.
+                doc.add_paragraph(
+                    "{}\n{}\n{}".format(
+                        self.host_s[i][0],
+                        self.lang["word_go_to"],
+                        find_next_host(self.host_s[i][0], self.host_m, self.guest_m_1, self.guest_m_2, self.host_m)),
+                    style=doc.styles["Body Text 2"]
+                )
+                doc.add_paragraph(
+                    "{}\n{}\n{}".format(
+                        self.guest_s_1[i][0],
+                        self.lang["word_go_to"],
+                        find_next_host(self.guest_s_1[i][0], self.host_m, self.guest_m_1, self.guest_m_2, self.host_m)),
+                    style=doc.styles["Body Text 2"]
+                )
+                doc.add_paragraph(
+                    "{}\n{}\n{}".format(
+                        self.guest_s_2[i][0],
+                        self.lang["word_go_to"],
+                        find_next_host(self.guest_s_2[i][0], self.host_m, self.guest_m_1, self.guest_m_2, self.host_m)),
+                    style=doc.styles["Body Text 2"]
+                )
+                doc.add_page_break()
+
+            # Create letters for the main course
+            for i in range(0, len(self.host_s)):
+                doc.add_paragraph(
+                    self.lang["word_leave_from_main_course"],
+                    style=doc.styles["Body Text 2"]
+                )
+                # Find the list the host is in.
+                doc.add_paragraph(
+                    "{}\n{}\n{}".format(
+                        self.host_m[i][0],
+                        self.lang["word_go_to"],
+                        find_next_host(self.host_m[i][0], self.host_d, self.guest_d_1, self.guest_d_2, self.host_d)),
+                    style=doc.styles["Body Text 2"]
+                )
+                doc.add_paragraph(
+                    "{}\n{}\n{}".format(
+                        self.guest_m_1[i][0],
+                        self.lang["word_go_to"],
+                        find_next_host(self.guest_m_1[i][0], self.host_d, self.guest_d_1, self.guest_d_2, self.host_d)),
+                    style=doc.styles["Body Text 2"]
+                )
+                doc.add_paragraph(
+                    "{}\n{}\n{}".format(
+                        self.guest_m_2[i][0],
+                        self.lang["word_go_to"],
+                        find_next_host(self.guest_m_2[i][0], self.host_d, self.guest_d_1, self.guest_d_2, self.host_d)),
+                    style=doc.styles["Body Text 2"]
+                )
+                # Don't add a page break after the final entry since this will be the last page.
+                if i+1 != len(self.host_m):
+                    doc.add_page_break()
+
             return doc
 
         else:
