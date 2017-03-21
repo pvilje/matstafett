@@ -38,6 +38,7 @@ word_goto_starters,You are welcome to: {} for starters\nAddess: {},Ni är välko
 word_leave_from_starters,Hope you have enjoyed the starters and the company!\Now it is time to move on!,Hoppas ni har njutit av förrätten och sällskapet!\nDet är fortfarande mycket kvar och nu är det dags att åka vidare...
 word_leave_from_main_course,It is now time to leave for the final part of the meal!,Det har blivit dags att bege sig mot sista delen av måltiden!
 word_go_to,Are welcome to,är välkomna till
+word_go_to_is_host,Is hosting the next meal,Är värd för nästa rätt
 error,Error,Fel
 error_save,"Error while saving, make sure the selected file is not open and try again.","Fel vid sparning, kolla att filen inte är öppen och försök igen."
 error_file_not_found,"Cannot find the file specified.","Kan inte hitta filen."

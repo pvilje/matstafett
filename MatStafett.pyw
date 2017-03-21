@@ -667,22 +667,55 @@ class Hmi:
             # Needle not in haystack
             return None
 
-        def find_next_host(needle, haystack1, haystack2, haystack3, needlestack):
+        def find_next_host(needle, haystack1, haystack2, hoststack):
             """
             Searches for the the guest lists to see where a participant is supposed to go next.
-            :param needlestack: list to find the hosts on.
             :param haystack1: list to search in
             :param haystack2: list to search in
-            :param haystack3: list to search in
+            :param hoststack: list to find hosts in
             :param needle: Who to search for
             :return: the name of the host
             """
             found_index = find_index(needle, haystack1)
             if found_index is None:
                 found_index = find_index(needle, haystack2)
-            if found_index is None:
-                found_index = find_index(needle, haystack3)
-            return needlestack[found_index][0]
+            if found_index is not None:
+                return hoststack[found_index]
+            else:
+                found_index = find_index(needle, hoststack)
+            if found_index is not None:
+                return None
+            else:
+                # should not be possible to be here.
+                raise IndexError("Error: 1")  # Unexpected Error, participant not found in any lists.
+
+        def add_paragraph_next_stop(document, participant, text, host=None):
+            """
+            Add a paragraph that sends the participants to their next stop
+            :param document: the document object
+            :param participant: participant as list
+            :param host: the host, if the participant is not hosting the next meal self
+            :param text: the text to print
+            :return: the modified document object.
+            """
+
+            if host is not None:
+                document.add_paragraph(
+                    "{}\n{}\n{}\n{}".format(
+                        participant[0],
+                        text,
+                        host[0],
+                        host[1]),
+                    style=document.styles["Body Text 2"]
+                )
+            else:
+                document.add_paragraph(
+                    "{}\n{}".format(
+                        participant[0],
+                        text),
+                    style=document.styles["Body Text 2"]
+                )
+            return document
 
         # Letters that are sent to participants before the food rally starts
         # ==================================================================
@@ -727,37 +760,37 @@ class Hmi:
 
         # Letters that are sent to the participants to be distributed during the dinners
         # ==============================================================================
-        # Todo: Looks messy if the host is welcome to the host.. also add adresses.
 
         elif part == "where_to_go":
             # Create letters for the starters
             for i in range(0, len(self.host_s)):
+                # header text
                 doc.add_paragraph(
                     self.lang["word_leave_from_starters"],
                     style=doc.styles["Body Text 2"]
                 )
-                # Find the list the host is in.
-                doc.add_paragraph(
-                    "{}\n{}\n{}".format(
-                        self.host_s[i][0],
-                        self.lang["word_go_to"],
-                        find_next_host(self.host_s[i][0], self.host_m, self.guest_m_1, self.guest_m_2, self.host_m)),
-                    style=doc.styles["Body Text 2"]
-                )
-                doc.add_paragraph(
-                    "{}\n{}\n{}".format(
-                        self.guest_s_1[i][0],
-                        self.lang["word_go_to"],
-                        find_next_host(self.guest_s_1[i][0], self.host_m, self.guest_m_1, self.guest_m_2, self.host_m)),
-                    style=doc.styles["Body Text 2"]
-                )
-                doc.add_paragraph(
-                    "{}\n{}\n{}".format(
-                        self.guest_s_2[i][0],
-                        self.lang["word_go_to"],
-                        find_next_host(self.guest_s_2[i][0], self.host_m, self.guest_m_1, self.guest_m_2, self.host_m)),
-                    style=doc.styles["Body Text 2"]
-                )
+
+                # send the host.
+                # The host will not host another meal. so just pass it on.
+                next_stop = find_next_host(self.host_s[i][0], self.guest_m_1, self.guest_m_2, self.host_m)
+                doc = add_paragraph_next_stop(doc, self.host_s[i], self.lang["word_go_to"], next_stop)
+
+                # Send guest 1
+                next_stop = find_next_host(self.guest_s_1[i][0], self.guest_m_1, self.guest_m_2, self.host_m)
+                # participant is hosting next meal.
+                if next_stop is None:
+                    doc = add_paragraph_next_stop(doc, self.guest_s_1[i], self.lang["word_go_to_is_host"])
+                else:
+                    doc = add_paragraph_next_stop(doc, self.guest_s_1[i], self.lang["word_go_to"], next_stop)
+
+                # Send guest 2
+                next_stop = find_next_host(self.guest_s_2[i][0], self.guest_m_1, self.guest_m_2, self.host_m)
+                # participant is hosting next meal.
+                if next_stop is None:
+                    doc = add_paragraph_next_stop(doc, self.guest_s_2[i], self.lang["word_go_to_is_host"])
+                else:
+                    doc = add_paragraph_next_stop(doc, self.guest_s_2[i], self.lang["word_go_to"], next_stop)
+
                 doc.add_page_break()
 
             # Create letters for the main course
@@ -766,28 +799,28 @@ class Hmi:
                     self.lang["word_leave_from_main_course"],
                     style=doc.styles["Body Text 2"]
                 )
-                # Find the list the host is in.
-                doc.add_paragraph(
-                    "{}\n{}\n{}".format(
-                        self.host_m[i][0],
-                        self.lang["word_go_to"],
-                        find_next_host(self.host_m[i][0], self.host_d, self.guest_d_1, self.guest_d_2, self.host_d)),
-                    style=doc.styles["Body Text 2"]
-                )
-                doc.add_paragraph(
-                    "{}\n{}\n{}".format(
-                        self.guest_m_1[i][0],
-                        self.lang["word_go_to"],
-                        find_next_host(self.guest_m_1[i][0], self.host_d, self.guest_d_1, self.guest_d_2, self.host_d)),
-                    style=doc.styles["Body Text 2"]
-                )
-                doc.add_paragraph(
-                    "{}\n{}\n{}".format(
-                        self.guest_m_2[i][0],
-                        self.lang["word_go_to"],
-                        find_next_host(self.guest_m_2[i][0], self.host_d, self.guest_d_1, self.guest_d_2, self.host_d)),
-                    style=doc.styles["Body Text 2"]
-                )
+
+                # send the host.
+                # The host will not host another meal. so just pass it on.
+                next_stop = find_next_host(self.host_m[i][0], self.guest_d_1, self.guest_d_2, self.host_d)
+                doc = add_paragraph_next_stop(doc, self.host_m[i], self.lang["word_go_to"], next_stop)
+
+                # Send guest 1
+                next_stop = find_next_host(self.guest_m_1[i][0], self.guest_d_1, self.guest_d_2, self.host_d)
+                # participant is hosting next meal.
+                if next_stop is None:
+                    doc = add_paragraph_next_stop(doc, self.guest_m_1[i], self.lang["word_go_to_is_host"])
+                else:
+                    doc = add_paragraph_next_stop(doc, self.guest_m_1[i], self.lang["word_go_to"], next_stop)
+
+                # Send guest 2
+                next_stop = find_next_host(self.guest_m_2[i][0], self.guest_d_1, self.guest_d_2, self.host_d)
+                # participant is hosting next meal.
+                if next_stop is None:
+                    doc = add_paragraph_next_stop(doc, self.guest_m_2[i], self.lang["word_go_to_is_host"])
+                else:
+                    doc = add_paragraph_next_stop(doc, self.guest_m_2[i], self.lang["word_go_to"], next_stop)
+
                 # Don't add a page break after the final entry since this will be the last page.
                 if i+1 != len(self.host_m):
                     doc.add_page_break()
