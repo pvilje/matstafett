@@ -47,7 +47,7 @@ error_number_participants,"The number of participants is not a factor of three."
 error_not_excel,"Unsupported file type (needs to be .xlsx).","Felaktig filtyp (måste vara .xlsx)."
 error_excel_data_new_lineup,"Invalid data in excel file. Cannot complete a new lineup.","Felaktid data i excelfilen. Kan inte göra ett nytt startfält."
 error_unexpected_read_file,"Unexpected error when reading the file, no idea what went wrong :(","Oväntat fel när filen lästes in, ingen aning om varför :("
-error_file_types,Error: Can only open .txt or .xlsx (Excel) files. ,Fel: Kan bara öppna .txt eller .xlsx (Excel)-filer.
+error_file_types,Error: Can only open .xlsx (Excel) files. ,Fel: Kan bara öppna .xlsx (Excel)-filer.
 error_no_file_selected, Error: No file selected :( ,Fel: Ingen fil vald :(
 warning_unexpected_version_title,"Unexpected version","Oväntad version"
 warning_openpyxl_version,"This program uses openpyxl version: {} \nopenpyxl version installed: {}","Det här programmet använder openpyxl version: {} \nopenpyxl version installerad: {}"

@@ -3,7 +3,7 @@ Project: Food Relay
 Author: Patrik Viljehav
 Version: 1.0
 URL: https://github.com/pvilje/matstafett
-Description:    Select an Excel (.xlsx) or notepad (.txt) document.
+Description:    Select an Excel (.xlsx) document.
                 The script will calculate a setup where all participants
                 will:
                     * Get a certain part of the dinner to prepare.
@@ -62,7 +62,7 @@ class Hmi:
         self.file_type = ""
         self.file_name = None
         self.file_path = None
-        self.list_supported_file_types = [("Excel", "*.xlsx"), ("Text", "*.txt")]
+        self.list_supported_file_types = [("Excel", "*.xlsx")]
         self.list_participants = []
         self.list_sorted_participants = []
         self.groups_starter = []
@@ -200,10 +200,7 @@ class Hmi:
         # =============
         file_type_ok = False
         if len(file) > 0:
-            if file.endswith(".txt"):
-                self.file_type = ".txt"
-                file_type_ok = True
-            elif file.endswith(".xlsx"):
+            if file.endswith(".xlsx"):
                 self.file_type = ".xlsx"
                 file_type_ok = True
             else:
@@ -234,19 +231,9 @@ class Hmi:
         file = os.path.join(self.file_path, self.file_name)
         self.log_output(self.lang["file_reading_{}".format(self.file_type)])
 
-        # If it is a txt file, just loop through all the lines, assume every line is a participant
-        # ========================================================================================
-        if self.file_type == ".txt":
-            with open(file, "r") as f:
-                for line in f:
-                    # Ignore blank lines
-                    if line.strip():
-                        self.list_participants.append(line)
-            return 0
-
         # If it is a xlsx file check column A for participants.
         # =====================================================
-        elif self.file_type == ".xlsx":
+        if self.file_type == ".xlsx":
             wb = openpyxl.load_workbook(file)
             ws = wb.get_sheet_by_name(wb.sheetnames[0])
             max_rows = ws.max_row
@@ -316,38 +303,9 @@ class Hmi:
         """
         self.log_output(self.lang["progress_gen_route"])
 
-        # Save a .txt file
-        # ================
-        if self.file_type == ".txt":
-
-            # Create a new file since we don't want to mess with the source.
-            filename = "new_" + self.file_name
-            # result = starter + main + desert
-            # Open / create a new file and save the results.
-            with open(os.path.join(self.file_path, filename), "w", encoding="utf8") as f:
-                f.write("{}\n".format(self.lang["excel_starter"]))
-                for index, host in enumerate(self.host_s):
-                    f.write("{}: {}".format(self.lang["excel_host"], host[0]))
-                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_s_1[index][0]))
-                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_s_2[index][0]))
-
-                f.write("{}\n".format(self.lang["excel_main_course"]))
-                for index, host in enumerate(self.host_m):
-                    f.write("{}: {}".format(self.lang["excel_host"], host[0]))
-                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_m_1[index][0]))
-                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_m_2[index][0]))
-
-                f.write("{}\n".format(self.lang["excel_desert"]))
-                for index, host in enumerate(self.host_d):
-                    f.write("{}: {}".format(self.lang["excel_host"], host[0]))
-                    f.write("{}: {}".format(self.lang["excel_guest"], self.guest_d_1[index][0]))
-                    f.write("{}: {}\n".format(self.lang["excel_guest"], self.guest_d_2[index][0]))
-
-            self.log_output("{} \n{}".format(self.lang["progress_saved_to"], filename))
-
-        # Save a .xlsx file
+        # Save an .xlsx file
         # =================
-        elif self.file_type == ".xlsx":
+        if self.file_type == ".xlsx":
             # Save to a new file, don't mess with the source.
             # check if this is the first generated result
             if os.path.isfile(os.path.join(self.file_path, "{}_{}".format(self.lang["file_name_result"],
@@ -862,7 +820,7 @@ class Hmi:
         if read_file_result == 0:
             self.log_output(self.lang["progress_prev_lineup_read"])  # Todo update logstring
         elif read_file_result == 1:
-            self.log_output(self.lang["error_file_types"], "red")  # Todo, if txt is dropped. remove this.
+            self.log_output(self.lang["error_file_types"], "red")
             self.log_output(self.lang["error_not_excel"], "red")
             return
         else:
