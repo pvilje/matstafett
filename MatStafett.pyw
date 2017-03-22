@@ -26,13 +26,15 @@ from tkinter import messagebox
 from collections import deque
 import openpyxl
 from openpyxl.styles import *
+import docx
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt
 
 # Constants
 # =========
-OPENPYXL_VERSION = "2.4"  # Todo, check docx aswell.
+OPENPYXL_VERSION = "2.4"
+PYTHON_DOCX_VERSION = "0.8"
 
 
 def rotate(l, n):
@@ -151,12 +153,16 @@ class Hmi:
         self.scroll_y_output = tkinter.Scrollbar(self.f_output, command=self.t_output.yview)
         self.t_output.configure(yscrollcommand=self.scroll_y_output.set, xscrollcommand=self.scroll_x_output.set)
 
-        # Check openpyxl version
+        # Check openpyxl and docx version
         # ======================
         if not openpyxl.__version__.startswith(OPENPYXL_VERSION):
             tkinter.messagebox.showwarning(self.lang["warning_unexpected_version_title"],
                                            self.lang["warning_openpyxl_version"]
                                            .format(OPENPYXL_VERSION, openpyxl.__version__))
+        if not docx.__version__.startswith(PYTHON_DOCX_VERSION):
+            tkinter.messagebox.showwarning(self.lang["warning_unexpected_version_title"],
+                                           self.lang["warning_docx_version"]
+                                           .format(PYTHON_DOCX_VERSION, docx.__version__))
 
     def draw_main(self):
         """
@@ -706,9 +712,8 @@ class Hmi:
                     elif any(content[i][0] == participant[0] for participant in self.guest_s_2):
                         host_index = find_index(content[i][0], self.guest_s_2)
                     else:
-                        # Todo translate error msg
                         # Should not be possible to be here
-                        raise IndexError("Participant not found, tell developer. Should not be possible.")
+                        raise IndexError(self.lang["error_impossible_error"])
                     doc.add_paragraph(
                         self.lang["word_goto_starters"].format(self.host_s[host_index][0], self.host_s[host_index][1]),
                         style=doc.styles["Body Text 2"]
@@ -818,7 +823,10 @@ class Hmi:
         # Read the participant file contents.
         read_file_result = self.read_file_contents()
         if read_file_result == 0:
-            self.log_output(self.lang["progress_prev_lineup_read"])  # Todo update logstring
+            if self.iv_new_year_same_lineup.get():
+                self.log_output(self.lang["progress_prev_lineup_read"])
+            else:
+                self.log_output(self.lang["progress_lineup_read"])
         elif read_file_result == 1:
             self.log_output(self.lang["error_file_types"], "red")
             self.log_output(self.lang["error_not_excel"], "red")

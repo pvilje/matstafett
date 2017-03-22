@@ -18,6 +18,7 @@ progress_gen_rand_list,Generating randomized list...,Genererar slumplista...
 progress_sort_unsort,Sorting... or rather unsorting... the participants...,Sorterar.. eller snarare osorterar... deltagarna
 progress_done,Finished!,Klart!
 progress_prev_lineup_read,"Previous lineup read.","Tidigare startfält inläst"
+progress_lineup_read,"Lineup read.","Startfält inläst"
 excel_starter,Starter,Förrätt
 excel_main_course,Main course,Huvudrätt
 excel_desert,Desert,Efterrätt
@@ -48,6 +49,8 @@ error_excel_data_new_lineup,"Invalid data in excel file. Cannot complete a new l
 error_unexpected_read_file,"Unexpected error when reading the file, no idea what went wrong :(","Oväntat fel när filen lästes in, ingen aning om varför :("
 error_file_types,Error: Can only open .xlsx (Excel) files. ,Fel: Kan bara öppna .xlsx (Excel)-filer.
 error_no_file_selected, Error: No file selected :( ,Fel: Ingen fil vald :(
+error_impossible_error,"Participant not found, tell developer. Should not be possible at this stage","Deltagare hittas inte, meddela utveckalren. Borde inte vara möjligt så här sent"
 warning_unexpected_version_title,"Unexpected version","Oväntad version"
 warning_openpyxl_version,"This program uses openpyxl version: {} \nopenpyxl version installed: {}","Det här programmet använder openpyxl version: {} \nopenpyxl version installerad: {}"
+warning_docx_version,"This program uses python-docx version: {} \npython-docx version installed: {}","Det här programmet använder python-docx version: {} \npython-docx version installerad: {}"
 valueerror_not_even_dist,"The previous starter,main and desert hosts are not distributed equally","The tidigare förrätt, huvudrätt och desert värdarna är inte jämnt fördelade"
