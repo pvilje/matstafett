@@ -8,7 +8,6 @@ dialog_select_file,Select File,Välj fil
 dialog_done_msg,Result saved to,Resultatet sparat till
 file_select,select file,välj fil
 file_selected,Selected file,Vald fil
-file_reading_.txt,Reading the txt file,Läser in txt-filen
 file_reading_.xlsx,Reading the xlsx file,Läser in xlsx-filen
 file_name_result,result,resultat
 progress_gen_route,Generating Route...,Genererar rutt...
