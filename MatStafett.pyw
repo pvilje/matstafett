@@ -588,7 +588,7 @@ class Hmi:
 
         # Style the document!
         # ===================
-        # Body text 1
+        # Body text 3
         document.styles["Body Text 3"].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         document.styles["Body Text 3"].font.name = "Lucida Calligraphy"
         document.styles["Body Text 3"].font.size = Pt(12)
@@ -604,6 +604,16 @@ class Hmi:
         document.styles["Body Text 2"].paragraph_format.space_before = Pt(12)
         document.styles["Body Text 2"].paragraph_format.space_after = Pt(12)
         document.styles["Body Text 2"].paragraph_format.line_spacing = Pt(12)
+        # Body Text
+        document.styles["Body Text"].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        document.styles["Body Text"].font.name = "Calibri"
+        document.styles["Body Text"].font.size = Pt(12)
+        document.styles["Body Text"].font.italic = True
+        document.styles["Body Text"].hidden = False
+        document.styles["Body Text"].quick_style = True
+        document.styles["Body Text"].paragraph_format.space_before = Pt(12)
+        document.styles["Body Text"].paragraph_format.space_after = Pt(12)
+        document.styles["Body Text"].paragraph_format.line_spacing = Pt(12)
 
         # Save
         # ====
@@ -727,6 +737,13 @@ class Hmi:
         elif part == "where_to_go":
             # Create letters for the starters
             for i in range(0, len(self.host_s)):
+
+                # State which host should have this note.
+                doc.add_paragraph(
+                    self.lang["word_note_read_by"].format(self.host_s[i][0]),
+                    style=doc.styles["Body Text"]
+                )
+
                 # header text
                 doc.add_paragraph(
                     self.lang["word_leave_from_starters"],
@@ -758,6 +775,14 @@ class Hmi:
 
             # Create letters for the main course
             for i in range(0, len(self.host_s)):
+
+                # State which host should have this note.
+                doc.add_paragraph(
+                    self.lang["word_note_read_by"].format(self.host_m[i][0]),
+                    style=doc.styles["Body Text"]
+                )
+
+                # Header text
                 doc.add_paragraph(
                     self.lang["word_leave_from_main_course"],
                     style=doc.styles["Body Text 2"]
